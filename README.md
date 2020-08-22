@@ -2,8 +2,8 @@
 
 These are my nix configs for trying out NixOS.
 I'm using NixOS so that I can easily manage my operating system configuration, which is more and more
-difficult as I get new computers, use more of them, and often keep coming back to my laptop
-configuration, which I have put too much work into configuring and I'm sure many of the steps in that
+difficult as I get new computers and use more of them. I often keep coming back to my laptop
+configuration, which I have put too much work into configuring, and I'm sure many of the steps in that
 process have been lost.
 So far, NixOS and Nix have solved all of my problems with configuring the linux desktop.
 I'm backing up my configuration on GitHub and documenting for myself how to replicate this

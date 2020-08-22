@@ -22,6 +22,17 @@ in {
         hideEdgeBorders = "smart";
       };
 
+      # Set the color for the border to be red
+      colors = {
+        focused = {
+          border = "#4c7899";
+          background = "#285577";
+          text = "#ffffff";
+          indicator = "#007f00";
+          childBorder = "#004f00";
+        };
+      };
+
       fonts = [ "NotoMono Nerd Font Mono 10" ];
 
       keybindings = lib.mkOptionDefault {
@@ -32,6 +43,9 @@ in {
         "${mod}+j" = "focus down";
         "${mod}+k" = "focus up";
         "${mod}+l" = "focus right";
+
+        # Focus mode toggle (also dmenu replacement)
+        "${mod}+d" = "focus mode_toggle";
 
         # Make sure that tile vertical and horizontal still work
         "${mod}+backslash" = "split h; exec notify-send 'tile horizontally'";
