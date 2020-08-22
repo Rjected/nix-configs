@@ -12,6 +12,13 @@ configuration across my devices.
 ## How to set up on a new device
 First, make sure wifi is set up, and the basic first user is set up.
 This could all be done in a TTY.
+Now, make sure to move to unstable channels and add home-manager
+```sh
+sudo nix-channel --add https://nixos.org/channels/nixos-unstable nixos
+sudo nix-channel --add https://github.com/rycee/home-manager/archive/master.tar.gz home-manager
+sudo nix-channel --update
+```
+
 Make sure git is not globally installed, so use `nix-env --uninstall git` if you need to.
 Next, run a new `nix-shell -p git` and clone this repo into `~/Projects/`.
 Finally, symlink the `nixos` and `nixpkgs` directories into `/etc/nixos` and `~/.config/nixpkgs`

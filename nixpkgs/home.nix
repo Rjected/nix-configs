@@ -53,9 +53,15 @@ in
     # pdf editor best
     zathura
 
-    # compilation stuff
+    # rg
     ripgrep
+
+    # compilation stuff
     llvm
+
+    # languages
+    go
+    texlive.combined.scheme-full
   ];
 
   home.sessionVariables = {
