@@ -15,12 +15,17 @@ in {
     enable = true;
     config = {
       modifier = mod;
-      window.border = 0;
+
+      window = {
+        border = 1;
+        titlebar = false;
+        hideEdgeBorders = "smart";
+      };
 
       fonts = [ "NotoMono Nerd Font Mono 10" ];
 
       keybindings = lib.mkOptionDefault {
-        "${mod}+space" = "exec ${pkgs.rofi}/bin/rofi";
+        "${mod}+space" = "exec --no-startup-id \"${pkgs.rofi}/bin/rofi -combi-modi 'window,drun,run,ssh' -show drun -sidebar-mode\"";
 
         # Focus
         "${mod}+h" = "focus left";
@@ -28,6 +33,12 @@ in {
         "${mod}+k" = "focus up";
         "${mod}+l" = "focus right";
 
+        # Make sure that tile vertical and horizontal still work
+        "${mod}+backslash" = "split h; exec notify-send 'tile horizontally'";
+        "${mod}+equal" = "split v; exec notify-send 'tile horizontally'";
+        "${mod}+q" = "split toggle";
+
+        # Use alacritty as terminal
         "${mod}+Return" = "exec ${pkgs.alacritty}/bin/alacritty";
       };
     };
