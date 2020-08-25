@@ -1,6 +1,11 @@
 {config, lib, pkgs, ...}:
 
 {
+  home.packages = with pkgs; [
+    # Let's get gitandtools gh
+    gitAndTools.gh
+  ];
+
   programs.git = {
     enable = true;
     userName = "Dan Cline";

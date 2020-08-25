@@ -94,7 +94,7 @@ in
     layout = "us";
 
     # Set proprietary nvidia drivers
-    videoDrivers = [ "nvidia" ];
+    videoDrivers = [ "modesetting" "nvidia" ];
 
     # Enable touchpad support.
     libinput.enable = true;
@@ -114,20 +114,16 @@ in
       enable = true;
     };
 
-    screenSection = ''
-      Option "metamodes" "nvidia-auto-select +0+0 { ForceCompositionPipeline = On }"
-    '';
-
   };
 
   # set the environment to nvidia offload
-  environment.systemPackages = [ nvidia-offload ];
+  environment.systemPackages = [
+    nvidia-offload
+  ];
 
   # === NVIDIA SETTINGS ===
   # Make sure that nvidia optimus is turned on
   hardware.nvidia = {
-    modesetting.enable = true;
-
     prime = {
       offload.enable = true;
 

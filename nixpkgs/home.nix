@@ -9,6 +9,7 @@ let
     ./i3.nix
     ./HighDpiCursor.nix
     ./alacritty.nix
+    ./autorandr.nix
   ];
 in
 {
@@ -47,6 +48,12 @@ in
 
   # Add utilities such as bat
   home.packages = with pkgs; [
+    # the basics
+    firefox
+    neovim
+    pciutils
+    nodejs
+
     # Monitoring and stuff
     htop
 
@@ -58,10 +65,43 @@ in
 
     # compilation stuff
     llvm
+    bazel
+    bear
+    gnumake
+    autoconf
+    automake
+    libtool
+    autoreconfHook
+    pkgconfig
+    m4
+    utillinux
 
-    # languages
+    # Nodejs & tools
+
+    # C++ & tools
+    clang-tools
+    clang
+    cpplint
+    ccls
+
+    # Go & tools
     go
+    gopls
+    golangci-lint
+
+    # LaTeX & tools
     texlive.combined.scheme-full
+
+    # Python & tools
+    python39Full
+    python3Packages.pytest
+    python3Packages.flake8
+    python3Packages.pylint
+    python3Packages.jedi
+    python3Packages.python-language-server
+
+    # arandr for fun
+    arandr
   ];
 
   home.sessionVariables = {
