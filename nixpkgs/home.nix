@@ -102,6 +102,9 @@ in
 
     # arandr for fun
     arandr
+
+    # this is a really amazing screenshot tool
+    flameshot
   ];
 
   home.sessionVariables = {
