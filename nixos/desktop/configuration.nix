@@ -4,17 +4,6 @@
 
 { config, pkgs, ... }:
 
-
-
-let
-nvidia-offload = pkgs.writeShellScriptBin "nvidia-offload" ''
-  export __NV_PRIME_RENDER_OFFLOAD=1
-  export __NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-G0
-  export __GLX_VENDOR_LIBRARY_NAME=nvidia
-  export __VK_LAYER_NV_optimus=NVIDIA_only
-  exec -a "$0" "$@"
-  '';
-in
 {
   imports =
     [ # Include the results of the hardware scan.
@@ -25,8 +14,6 @@ in
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub.useOSProber = true;
-
-  # get the rtl88 drivers for the trendnet usb adapter
   boot.extraModulePackages = with config.boot.kernelPackages; [
     rtl88x2bu
   ];
@@ -34,14 +21,14 @@ in
   # Allow nonfree packages
   nixpkgs.config.allowUnfree = true;
 
-  networking.hostName = "dan-nixos-laptop"; # Define your hostname.
+  networking.hostName = "nixos-dan-sff"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
-  networking.useDHCP = false;
-  networking.interfaces.wlp2s0.useDHCP = true;
+  # networking.useDHCP = false;
+  # networking.interfaces.wlp2s0.useDHCP = true;
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
@@ -84,26 +71,14 @@ in
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
-  networking.firewall.enable = false;
+  # networking.firewall.enable = false;
 
   # Enable CUPS to print documents.
   # services.printing.enable = true;
 
   # Enable sound.
   sound.enable = true;
-  hardware.pulseaudio = {
-    enable = true;
-
-    extraModules = [ pkgs.pulseaudio-modules-bt ];
-
-    extraConfig = "
-      load-module module-switch-on-connect
-    ";
-
-    # NixOS allows either a lightweight build (default) or full build of PulseAudio to be installed.
-    # Only the full build has Bluetooth support, so it must be selected here.
-    package = pkgs.pulseaudioFull;
-  };
+  hardware.pulseaudio.enable = true;
 
   # === X11 Settings ===
   services.xserver = {
@@ -111,10 +86,11 @@ in
     layout = "us";
 
     # Set proprietary nvidia drivers
-    videoDrivers = [ "modesetting" "nvidia" ];
+    videoDrivers = [ "nvidia" ];
 
-    # Enable touchpad support.
-    libinput.enable = true;
+    # Enable touchpad support. (not needed for desktops, maybe should include only the laptop specific settings in an import and then fix the imports
+    # whenever it's not a laptop
+    # libinput.enable = true;
 
     desktopManager = {
       # disable basic xterm
@@ -133,37 +109,8 @@ in
 
   };
 
-  # set the environment to nvidia offload
-  environment.systemPackages = [
-    nvidia-offload
-  ];
-
-  # === BLUETOOTH SETTINGS ===
-  hardware.bluetooth = {
-    enable = true;
-  };
-
-  # ugh we need to start blueman here instead of home-manager for some reason
-  # (TODO)
-  # LOL we need to enable the blueman applet
-  services.blueman.enable = true;
-
-  # === DOCKER SETTINGS ===
-  virtualisation.docker.enable = true;
-
   # === NVIDIA SETTINGS ===
-  # Make sure that nvidia optimus is turned on
-  hardware.nvidia = {
-    prime = {
-      offload.enable = true;
-
-      # BUS ID of nvidia gpu. Found using lspci, under either 3D.
-      nvidiaBusId = "PCI:1:0:0";
-
-      # BUS ID of intel gpu. Found using lspci, under VGA.
-      intelBusId = "PCI:0:2:0";
-    };
-  };
+  # haha we have none
 
   # Enable picom
   services.picom = {
@@ -173,26 +120,22 @@ in
   };
 
   # Enable kubernetes
-  services.kubernetes = {
-    apiserver.enable = true;
-    controllerManager.enable = true;
-    scheduler.enable = true;
-    addonManager.enable = true;
-    proxy.enable = true;
-    flannel.enable = true;
-    masterAddress = "localhost";
-  };
+  # services.kubernetes = {
+  #   apiserver.enable = true;
+  #   controllerManager.enable = true;
+  #   scheduler.enable = true;
+  #   addonManager.enable = true;
+  #   proxy.enable = true;
+  #   flannel.enable = true;
+  #   masterAddress = "localhost";
+  # };
 
-  services.kubernetes.roles = [ "master" "node" ];
-
-  # this option is defined for user safety, this is NOT default nor will it be
-  # any time soon. This is fine, just needs to be properly documented
-  services.kubernetes.kubelet.extraOpts = "--fail-swap-on=false";
+  # services.kubernetes.roles = [ "master" "node" ];
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.rjected = {
     isNormalUser = true;
-    extraGroups = [ "docker" "audio" "wheel" "networkmanager" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "wheel" "networkmanager" ]; # Enable ‘sudo’ for the user.
   };
 
   # === FONTS ===
