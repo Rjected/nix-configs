@@ -4,12 +4,17 @@ let
   baseImports = [
     ./git.nix
     ./shells.nix
+    ./vnc.nix
   ];
   laptopImports = [
     ./i3.nix
     ./HighDpiCursor.nix
     ./alacritty.nix
     ./autorandr.nix
+    ./bluetooth.nix
+    ./spotify.nix
+    ./google-cast.nix
+    ./rescuetime.nix
   ];
 in
 {
@@ -53,9 +58,23 @@ in
     neovim
     pciutils
     nodejs
+    unzip
+    imagemagick
+    feh
 
     # Monitoring and stuff
     htop
+    bpytop
+
+    # weechat
+    weechat
+    # https://www.reddit.com/r/siacoin/comments/iox6ly/proposal_the_sia_foundation/
+
+    # signal!!
+    signal-desktop
+
+    # ug chrome
+    google-chrome
 
     # pdf editor best
     zathura
@@ -88,6 +107,7 @@ in
     go
     gopls
     golangci-lint
+    docker
 
     # LaTeX & tools
     texlive.combined.scheme-full
@@ -98,13 +118,16 @@ in
     python3Packages.flake8
     python3Packages.pylint
     python3Packages.jedi
-    python3Packages.python-language-server
+    # python3Packages.python-language-server
 
     # arandr for fun
     arandr
 
     # this is a really amazing screenshot tool
     flameshot
+
+    # we need audio control
+    pavucontrol
   ];
 
   home.sessionVariables = {

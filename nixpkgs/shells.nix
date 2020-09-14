@@ -5,6 +5,7 @@ let
     l = "exa";
     ls = "exa";
     download = "aria2c --file-allocation=none --seed-time=0";
+    t = "task";
   };
 in
 {
@@ -14,14 +15,16 @@ in
     bat
     mosh
     aria
+    taskwarrior
   ];
 
   programs.fish = {
     inherit shellAliases;
     enable = true;
-    # promptInit = ''
-    #   echo -e ""
-    #   neofetch
-    # '';
+    promptInit = ''
+      function fish_greeting
+        task
+      end
+    '';
   };
 }

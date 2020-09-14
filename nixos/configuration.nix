@@ -79,14 +79,26 @@ in
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
+  networking.firewall.enable = false;
 
   # Enable CUPS to print documents.
   # services.printing.enable = true;
 
   # Enable sound.
   sound.enable = true;
-  hardware.pulseaudio.enable = true;
+  hardware.pulseaudio = {
+    enable = true;
+
+    extraModules = [ pkgs.pulseaudio-modules-bt ];
+
+    extraConfig = "
+      load-module module-switch-on-connect
+    ";
+
+    # NixOS allows either a lightweight build (default) or full build of PulseAudio to be installed.
+    # Only the full build has Bluetooth support, so it must be selected here.
+    package = pkgs.pulseaudioFull;
+  };
 
   # === X11 Settings ===
   services.xserver = {
@@ -121,6 +133,19 @@ in
     nvidia-offload
   ];
 
+  # === BLUETOOTH SETTINGS ===
+  hardware.bluetooth = {
+    enable = true;
+  };
+
+  # ugh we need to start blueman here instead of home-manager for some reason
+  # (TODO)
+  # LOL we need to enable the blueman applet
+  services.blueman.enable = true;
+
+  # === DOCKER SETTINGS ===
+  virtualisation.docker.enable = true;
+
   # === NVIDIA SETTINGS ===
   # Make sure that nvidia optimus is turned on
   hardware.nvidia = {
@@ -143,22 +168,26 @@ in
   };
 
   # Enable kubernetes
-  # services.kubernetes = {
-  #   apiserver.enable = true;
-  #   controllerManager.enable = true;
-  #   scheduler.enable = true;
-  #   addonManager.enable = true;
-  #   proxy.enable = true;
-  #   flannel.enable = true;
-  #   masterAddress = "localhost";
-  # };
+  services.kubernetes = {
+    apiserver.enable = true;
+    controllerManager.enable = true;
+    scheduler.enable = true;
+    addonManager.enable = true;
+    proxy.enable = true;
+    flannel.enable = true;
+    masterAddress = "localhost";
+  };
 
-  # services.kubernetes.roles = [ "master" "node" ];
+  services.kubernetes.roles = [ "master" "node" ];
+
+  # this option is defined for user safety, this is NOT default nor will it be
+  # any time soon. This is fine, just needs to be properly documented
+  services.kubernetes.kubelet.extraOpts = "--fail-swap-on=false";
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.rjected = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "docker" "audio" "wheel" "networkmanager" ]; # Enable ‘sudo’ for the user.
   };
 
   # === FONTS ===

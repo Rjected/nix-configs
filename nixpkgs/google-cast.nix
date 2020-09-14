@@ -4,10 +4,9 @@ let
   go-cast = pkgs.callPackage (builtins.fetchTarball {
       url = "https://github.com/rjected/go-cast/archive/df48bea685.tar.gz";
       sha256 = "0xka0q3f7axrglckaxbmh0cwpad1r7kc1im4alfhw9vp90j81xyh";
-    }) {};
-  })
+  }) {};
   shellAliases = {
-    cast-screen = "${go-cast}/bin/cast --name DanScreenj";
+    cast-screen = "${go-cast}/bin/cast --name 'The LitSpace TV' --host 192.168.137.85";
     cast = "${go-cast}/bin/cast";
   };
 in
