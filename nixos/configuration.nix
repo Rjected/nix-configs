@@ -29,6 +29,7 @@ in
   # get the rtl88 drivers for the trendnet usb adapter
   boot.extraModulePackages = with config.boot.kernelPackages; [
     rtl88x2bu
+    rtl8814au
   ];
 
   # Allow nonfree packages

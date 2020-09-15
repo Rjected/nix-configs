@@ -135,7 +135,7 @@
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.rjected = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "audio" "wheel" "networkmanager" ]; # Enable ‘sudo’ for the user.
   };
 
   # === FONTS ===

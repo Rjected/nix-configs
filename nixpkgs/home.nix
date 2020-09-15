@@ -5,6 +5,7 @@ let
     ./git.nix
     ./shells.nix
     ./vnc.nix
+    ./taskwarrior.nix
   ];
   laptopImports = [
     ./i3.nix
@@ -120,6 +121,9 @@ in
     python3Packages.jedi
     # python3Packages.python-language-server
 
+    # Streaming
+    obs-studio
+
     # arandr for fun
     arandr
 
@@ -128,6 +132,10 @@ in
 
     # we need audio control
     pavucontrol
+
+    # nvtop, also for fun
+    nvtop
+    
   ];
 
   home.sessionVariables = {
