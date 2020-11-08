@@ -6,6 +6,7 @@ let
     ./shells.nix
     ./vnc.nix
     ./taskwarrior.nix
+    ./vlc.nix
   ];
   laptopImports = [
     ./tmux.nix
@@ -84,7 +85,7 @@ in
     signal-desktop
 
     # ug chrome
-    google-chrome
+    # google-chrome
 
     # pdf editor best
     zathura
@@ -151,8 +152,15 @@ in
     # nvtop, also for fun
     nvtop
     busybox
+    mosh
 
+    # annoying programs
+    zoom-us
+    google-chrome
   ];
+
+  # to fix a bug
+  manual.manpages.enable = false;
 
   home.sessionVariables = {
     EDITOR = "nvim";

@@ -4,10 +4,16 @@
 
 { config, pkgs, ... }:
 
+let
+  rjected = import
+  (builtins.fetchTarball https://github.com/rjected/nixpkgs/archive/master.tar.gz)
+  {config = config.nixpkgs.config;};
+in
 {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ./kubernetes-master.nix
     ];
 
   # Use the systemd-boot EFI boot loader.
@@ -38,7 +44,10 @@
   networking.networkmanager.enable = true;
 
   # Select internationalisation properties.
-  # i18n.defaultLocale = "en_US.UTF-8";
+  i18n.defaultLocale = "en_US.UTF-8";
+  i18n.extraLocaleSettings = {
+    LC_TIME = "en_GB.UTF-8";
+  };
   # console = {
   #   font = "Lat2-Terminus16";
   #   keyMap = "us";
@@ -65,20 +74,53 @@
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
+  services.openssh.enable = true;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
+  services.tailscale.enable = true;
+  # networking.firewall.allowedUDPPorts = [
+  #   41641
+  #   60000
+  #   60001
+  #   60002
+  #   60003
+  #   60004
+  # ];
+  environment.systemPackages = [ rjected.tailscale ];
+
   # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
+  networking.firewall.enable = false;
 
   # Enable CUPS to print documents.
   # services.printing.enable = true;
+  services.jellyfin = {
+    enable = true;
+  };
 
   # Enable sound.
   sound.enable = true;
-  hardware.pulseaudio.enable = true;
+  hardware = {
+    pulseaudio = {
+      enable = true;
+      package = pkgs.pulseaudioFull;
+      extraModules = [ pkgs.pulseaudio-modules-bt ];
+    };
+    # Enable bluetooth
+    bluetooth = {
+      enable = true;
+      config = {
+        General = {
+          Enable = "Source,Sink,Media,Socket";
+        };
+      };
+    };
+    steam-hardware = {
+      enable = true;
+    };
+  };
+
+  services.blueman.enable = true;
 
   # === X11 Settings ===
   services.xserver = {
@@ -119,18 +161,6 @@
     shadow          = false;
   };
 
-  # Enable kubernetes
-  # services.kubernetes = {
-  #   apiserver.enable = true;
-  #   controllerManager.enable = true;
-  #   scheduler.enable = true;
-  #   addonManager.enable = true;
-  #   proxy.enable = true;
-  #   flannel.enable = true;
-  #   masterAddress = "localhost";
-  # };
-
-  # services.kubernetes.roles = [ "master" "node" ];
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.rjected = {
