@@ -233,7 +233,7 @@ in
     masterAddress = "localhost";
   };
 
-  services.kubernetes.roles = [ "master" "node" ];
+  services.kubernetes.roles = [ "node" ];
 
   # this option is defined for user safety, this is NOT default nor will it be
   # any time soon. This is fine, just needs to be properly documented
