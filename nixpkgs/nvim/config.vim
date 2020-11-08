@@ -10,7 +10,7 @@ endif
 let vimplug_exists=expand('~/.vim/autoload/plug.vim')
 
 let g:vim_bootstrap_langs = "go"
-let g:vim_bootstrap_editor = "vim"				" nvim or vim
+let g:vim_bootstrap_editor = "nvim"				" nvim or vim
 
 if !filereadable(vimplug_exists)
   if !executable("curl")
@@ -31,13 +31,22 @@ call plug#begin(expand('~/.vim/plugged'))
 "*****************************************************************************
 "" Plug install packages
 "*****************************************************************************
+Plug 'junegunn/fzf', {'dir': '~/.fzf','do': './install --all'}
+Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
+Plug 'chrisbra/Colorizer'
+Plug 'hwayne/tla.vim'
+Plug 'rust-lang/rust.vim'
+Plug 'lervag/vimtex'
+Plug 'honza/vim-snippets'
+Plug 'AlessandroYorba/alduin'
+Plug 'xolox/vim-misc'
+Plug 'xolox/vim-session'
 Plug 'fatih/vim-go'
 Plug 'ryanoasis/vim-devicons'
-Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
 Plug 'ntpeters/vim-better-whitespace'
 Plug 'scrooloose/nerdtree'
-Plug 'jistr/vim-nerdtree-tabs'
+" Plug 'jistr/vim-nerdtree-tabs'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
 Plug 'vim-airline/vim-airline'
@@ -50,27 +59,14 @@ Plug 'majutsushi/tagbar'
 Plug 'Yggdroot/indentLine'
 Plug 'avelino/vim-bootstrap-updater'
 Plug 'sheerun/vim-polyglot'
-if isdirectory('/usr/local/opt/fzf')
-  Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
-else
-  Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --bin' }
-  Plug 'junegunn/fzf.vim'
-endif
+Plug 'antoinemadec/coc-fzf'
 let g:make = 'gmake'
 if exists('make')
         let g:make = 'make'
 endif
 Plug 'Shougo/vimproc.vim', {'do': g:make}
 
-"" vim easy align
-Plug 'junegunn/vim-easy-align'
-
-" Align GitHub-flavored Markdown tables
-au FileType markdown vmap <Leader><Bslash> :EasyAlign*<Bar><Enter>
-
 "" Vim-Session
-Plug 'xolox/vim-misc'
-Plug 'xolox/vim-session'
 
 if v:version >= 703
   Plug 'Shougo/vimshell.vim'
@@ -82,58 +78,16 @@ if v:version >= 704
 
 endif
 
-Plug 'honza/vim-snippets'
-
-"" Color
-Plug 'tomasr/molokai'
-Plug 'AlessandroYorba/alduin'
 
 "*****************************************************************************
 "" Custom bundles
 "*****************************************************************************
 
-" show colors if they are hex
-Plug 'chrisbra/Colorizer'
-
-" Possibly the best vim plugin in existence right now!
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
-
-" " YouCompleteMe
-" function! BuildYCM(info)
-"   " info is a dictionary with 3 fields
-"   " - name:   name of the plugin
-"   " - status: 'installed', 'updated', or 'unchanged'
-"   " - force:  set on PlugInstall! or PlugUpdate!
-"   if a:info.status == 'installed' || a:info.force
-"     !./install.py --go-completer --rust-completer --java-completer
-"   endif
-" endfunction
-
-" Plug 'ycm-core/YouCompleteMe', { 'do': function('BuildYCM') }
-
 " Enable highlighting and whitespace on save by default
 let g:better_whitespace_enabled=1
 let g:strip_whitespace_on_save=1
 
-" java getter setters
-Plug 'vim-scripts/java_getset.vim', { 'for': 'java' }
-
-
-" rust
-"" Rust
-Plug 'rust-lang/rust.vim', { 'for': 'rust' }
-
-" TLA Plus!!!
-Plug 'hwayne/tla.vim', { 'for': 'tla' }
-
-" (Optional) Multi-entry selection UI.
-Plug 'junegunn/fzf'
-
-" vimtex
-" DO NOT NEED if polyglot is installed
-Plug 'lervag/vimtex'
-
-" zathura can do all this shit??
+" zathura can do all this??
 let g:tex_flavor = 'latex'
 let g:vimtex_view_method = 'zathura'
 let g:vimtex_quickfix_mode=0
@@ -144,9 +98,6 @@ function! ViewerCallback() dict
     call self.forward_search(self.out())
 endfunction
 let g:vimtex_view_zathura_hook_callback = 'ViewerCallback'
-
-" Finally, WakaTime
-" Plug 'wakatime/vim-wakatime'
 
 "*****************************************************************************
 "*****************************************************************************
@@ -217,7 +168,8 @@ let g:session_command_aliases = 1
 "*****************************************************************************
 syntax on
 set ruler
-set number
+set number relativenumber
+set nu rnu
 
 let no_buffers_menu=1
 if !exists('g:not_finish_vimplug')
@@ -237,7 +189,7 @@ if has("gui_running")
 else
   let g:CSApprox_loaded = 1
 
-  " IndentLine
+  " IndentLine - the magic line when you indent something
   let g:indentLine_enabled = 1
   let g:indentLine_concealcursor = 0
   let g:indentLine_char = '┆'
@@ -286,12 +238,6 @@ if exists("*fugitive#statusline")
   set statusline+=%{fugitive#statusline()}
 endif
 
-" vim-airline
-let g:airline_theme = 'powerlineish'
-let g:airline#extensions#branch#enabled = 1
-let g:airline#extensions#tabline#enabled = 1
-let g:airline#extensions#tagbar#enabled = 1
-let g:airline_skip_empty_sections = 1
 
 "*****************************************************************************
 "" Abbreviations
@@ -315,10 +261,14 @@ let g:NERDTreeSortOrder=['^__\.py$', '\/$', '*', '\.swp$', '\.bak$', '\~$']
 let g:NERDTreeShowBookmarks=1
 let g:nerdtree_tabs_focus_on_files=1
 let g:NERDTreeMapOpenInTabSilent = '<RightMouse>'
-let g:NERDTreeWinSize = 50
+let g:NERDTreeWinSize = 35
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*.pyc,*.db,*.sqlite
 nnoremap <silent> <F2> :NERDTreeFind<CR>
 nnoremap <silent> <F3> :NERDTreeToggle<CR>
+
+"" Taglist settings
+let g:tagbar_width = 45
+autocmd VimEnter * nested :TagbarOpen
 
 " grep.vim
 nnoremap <silent> <leader>f :Rgrep<CR>
@@ -329,13 +279,6 @@ let Grep_Skip_Dirs = '.git node_modules'
 " vimshell.vim
 let g:vimshell_user_prompt = 'fnamemodify(getcwd(), ":~")'
 let g:vimshell_prompt =  '$ '
-
-" terminal emulation
-if g:vim_bootstrap_editor == 'nvim'
-  nnoremap <silent> <leader>sh :terminal<CR>
-else
-  nnoremap <silent> <leader>sh :VimShellCreate<CR>
-endif
 
 "*****************************************************************************
 "" Functions
@@ -355,7 +298,11 @@ endif
 "*****************************************************************************
 "" Autocmd Rules
 "*****************************************************************************
-"" The PC is fast enough, do syntax highlight syncing from start unless 200 lines
+
+"" Start NERDTree automatically
+autocmd vimenter * NERDTree
+
+"" The PC is fast enough, do syntax highlight syncing from start unless 500 lines
 augroup vimrc-sync-fromstart
   autocmd!
   autocmd BufEnter * :syntax sync maxlines=200
@@ -370,18 +317,82 @@ augroup vimrc-remember-cursor-position
   autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g`\"" | endif
 augroup END
 
-"" txt
-" augroup vimrc-wrapping
-"   autocmd!
-"   autocmd BufRead,BufNewFile *.txt call s:setupWrapping()
-" augroup END
-
 "" make/cmake
 augroup vimrc-make-cmake
   autocmd!
   autocmd FileType make setlocal noexpandtab
   autocmd BufNewFile,BufRead CMakeLists.txt setlocal filetype=cmake
 augroup END
+
+autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4 softtabstop=4
+
+" Added augroup so I only start this when ocaml does
+augroup ocaml
+    " ## THIS MAKES EVERYTHING REALLY REALLY SLOW
+    " ## added by OPAM user-setup for vim / base ## 93ee63e278bdfc07d1139a748ed3fff2 ## you can edit, but keep this line
+    au Filetype ocaml let s:opam_share_dir = system("opam config var share")
+    au Filetype ocaml let s:opam_share_dir = substitute(s:opam_share_dir, '[\r\n]*$', '', '')
+
+    au Filetype ocaml let s:opam_configuration = {}
+
+    au Filetype ocaml function! OpamConfOcpIndent()
+    au Filetype ocaml   execute "set rtp^=" . s:opam_share_dir . "/ocp-indent/vim"
+    au Filetype ocaml endfunction
+    au Filetype ocaml let s:opam_configuration['ocp-indent'] = function('OpamConfOcpIndent')
+
+    au Filetype ocaml function! OpamConfOcpIndex()
+    au Filetype ocaml   execute "set rtp+=" . s:opam_share_dir . "/ocp-index/vim"
+    au Filetype ocaml endfunction
+    au Filetype ocaml let s:opam_configuration['ocp-index'] = function('OpamConfOcpIndex')
+
+    au Filetype ocaml function! OpamConfMerlin()
+    au Filetype ocaml   let l:dir = s:opam_share_dir . "/merlin/vim"
+    au Filetype ocaml   execute "set rtp+=" . l:dir
+    au Filetype ocaml endfunction
+    au Filetype ocaml let s:opam_configuration['merlin'] = function('OpamConfMerlin')
+
+    au Filetype ocaml let s:opam_packages = ["ocp-indent", "ocp-index", "merlin"]
+    au Filetype ocaml let s:opam_check_cmdline = ["opam list --installed --short --safe --color=never"] + s:opam_packages
+    au Filetype ocaml let s:opam_available_tools = split(system(join(s:opam_check_cmdline)))
+    au Filetype ocaml for tool in s:opam_packages
+    au Filetype ocaml   " Respect package order (merlin should be after ocp-index)
+    au Filetype ocaml   if count(s:opam_available_tools, tool) > 0
+    au Filetype ocaml     call s:opam_configuration[tool]()
+    au Filetype ocaml   endif
+    au Filetype ocaml endfor
+    " ## end of OPAM user-setup addition for vim / base ## keep this line
+augroup end
+
+"" Golang specific commands
+augroup go
+
+  au!
+  au Filetype go command! -bang A call go#alternate#Switch(<bang>0, 'edit')
+  au Filetype go command! -bang AV call go#alternate#Switch(<bang>0, 'vsplit')
+  au Filetype go command! -bang AS call go#alternate#Switch(<bang>0, 'split')
+  au Filetype go command! -bang AT call go#alternate#Switch(<bang>0, 'tabe')
+
+  au FileType go nmap <Leader>dd <Plug>(go-def-vertical)
+  au FileType go nmap <Leader>dv <Plug>(go-doc-vertical)
+  au FileType go nmap <Leader>db <Plug>(go-doc-browser)
+
+  au FileType go nmap <leader>r  <Plug>(go-run)
+  au FileType go nmap <leader>t  <Plug>(go-test)
+  au FileType go nmap <Leader>gt <Plug>(go-coverage-toggle)
+  au FileType go nmap <Leader>i <Plug>(go-info)
+  au FileType go nmap <silent> <Leader>l <Plug>(go-metalinter)
+  au FileType go nmap <C-g> :GoDecls<cr>
+  au FileType go nmap <leader>dr :GoDeclsDir<cr>
+  au FileType go imap <C-g> <esc>:<C-u>GoDecls<cr>
+  au FileType go imap <leader>dr <esc>:<C-u>GoDeclsDir<cr>
+  au FileType go nmap <leader>rb :<C-u>call <SID>build_go_files()<CR>
+
+  " Setup formatexpr specified filetype(s).
+  autocmd FileType go setl formatexpr=CocAction('formatSelected')
+  " Update signature help on jump placeholder.
+  autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
+
+augroup end
 
 "" Set up column width for certain file types
 augroup filetypedetect
@@ -527,11 +538,15 @@ vnoremap K :m '<-2<CR>gv=gv
 nnoremap <Leader>o :.Gbrowse<CR>
 
 "*****************************************************************************
-"" Custom configs
+"" COC configs
 "*****************************************************************************
 
-noremap <silent> <C-]> <Plug>(coc-definition)
-noremap <C-\> :GoReferrers<CR>
+" noremap <silent> <C-]> <Plug>(coc-definition)
+" noremap <silent> <C-\> <Plug>(coc-references)
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
 
 " Use <c-space> to trigger completion.
 if has('nvim')
@@ -539,6 +554,9 @@ if has('nvim')
 else
   inoremap <silent><expr> <c-@> coc#refresh()
 endif
+
+" Use K to show documentation in preview window.
+nnoremap <silent> K :call <SID>show_documentation()<CR>
 
 function! s:show_documentation()
   if (index(['vim','help'], &filetype) >= 0)
@@ -553,6 +571,10 @@ autocmd CursorHold * silent call CocActionAsync('highlight')
 
 " coc statusline neovim
 set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
+
+"*****************************************************************************
+"" Custom configs
+"*****************************************************************************
 
 " go
 " vim-go (installed by polyglot)
@@ -583,47 +605,6 @@ let g:go_highlight_generate_tags = 1
 let g:go_highlight_space_tab_error = 0
 let g:go_highlight_extra_types = 1
 
-autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4 softtabstop=4
-
-augroup go
-
-  au!
-  au Filetype go command! -bang A call go#alternate#Switch(<bang>0, 'edit')
-  au Filetype go command! -bang AV call go#alternate#Switch(<bang>0, 'vsplit')
-  au Filetype go command! -bang AS call go#alternate#Switch(<bang>0, 'split')
-  au Filetype go command! -bang AT call go#alternate#Switch(<bang>0, 'tabe')
-
-  au FileType go nmap <Leader>dd <Plug>(go-def-vertical)
-  au FileType go nmap <Leader>dv <Plug>(go-doc-vertical)
-  au FileType go nmap <Leader>db <Plug>(go-doc-browser)
-
-  au FileType go nmap <leader>r  <Plug>(go-run)
-  au FileType go nmap <leader>t  <Plug>(go-test)
-  au FileType go nmap <Leader>gt <Plug>(go-coverage-toggle)
-  au FileType go nmap <Leader>i <Plug>(go-info)
-  au FileType go nmap <silent> <Leader>l <Plug>(go-metalinter)
-  au FileType go nmap <C-g> :GoDecls<cr>
-  au FileType go nmap <leader>dr :GoDeclsDir<cr>
-  au FileType go imap <C-g> <esc>:<C-u>GoDecls<cr>
-  au FileType go imap <leader>dr <esc>:<C-u>GoDeclsDir<cr>
-  au FileType go nmap <leader>rb :<C-u>call <SID>build_go_files()<CR>
-
-  " Setup formatexpr specified filetype(s).
-  autocmd FileType go setl formatexpr=CocAction('formatSelected')
-  " Update signature help on jump placeholder.
-  autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
-
-augroup END
-
-" RLS support
-" if executable('rls')
-"     au User lsp_setup call lsp#register_server({
-"         \ 'name': 'rls',
-"         \ 'cmd': {server_info->['rustup', 'run', 'nightly', 'rls']},
-"         \ 'whitelist': ['rust'],
-"         \ })
-" endif
-
 "*****************************************************************************
 "*****************************************************************************
 
@@ -640,6 +621,12 @@ endif
 if !exists('g:airline_symbols')
   let g:airline_symbols = {}
 endif
+
+let g:airline_theme = 'powerlineish'
+let g:airline#extensions#branch#enabled = 1
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tagbar#enabled = 1
+let g:airline_skip_empty_sections = 1
 
 if !exists('g:airline_powerline_fonts')
   let g:airline#extensions#tabline#left_sep = ' '
@@ -736,39 +723,3 @@ function! Fzf_dev(qargs)
         \ 'down':    '40%' })
 endfunction
 
-" Added augroup so I only start this when ocaml does
-augroup ocaml
-    " ## THIS MAKES EVERYTHING REALLY REALLY SLOW
-    " ## added by OPAM user-setup for vim / base ## 93ee63e278bdfc07d1139a748ed3fff2 ## you can edit, but keep this line
-    au Filetype ocaml let s:opam_share_dir = system("opam config var share")
-    au Filetype ocaml let s:opam_share_dir = substitute(s:opam_share_dir, '[\r\n]*$', '', '')
-
-    au Filetype ocaml let s:opam_configuration = {}
-
-    au Filetype ocaml function! OpamConfOcpIndent()
-    au Filetype ocaml   execute "set rtp^=" . s:opam_share_dir . "/ocp-indent/vim"
-    au Filetype ocaml endfunction
-    au Filetype ocaml let s:opam_configuration['ocp-indent'] = function('OpamConfOcpIndent')
-
-    au Filetype ocaml function! OpamConfOcpIndex()
-    au Filetype ocaml   execute "set rtp+=" . s:opam_share_dir . "/ocp-index/vim"
-    au Filetype ocaml endfunction
-    au Filetype ocaml let s:opam_configuration['ocp-index'] = function('OpamConfOcpIndex')
-
-    au Filetype ocaml function! OpamConfMerlin()
-    au Filetype ocaml   let l:dir = s:opam_share_dir . "/merlin/vim"
-    au Filetype ocaml   execute "set rtp+=" . l:dir
-    au Filetype ocaml endfunction
-    au Filetype ocaml let s:opam_configuration['merlin'] = function('OpamConfMerlin')
-
-    au Filetype ocaml let s:opam_packages = ["ocp-indent", "ocp-index", "merlin"]
-    au Filetype ocaml let s:opam_check_cmdline = ["opam list --installed --short --safe --color=never"] + s:opam_packages
-    au Filetype ocaml let s:opam_available_tools = split(system(join(s:opam_check_cmdline)))
-    au Filetype ocaml for tool in s:opam_packages
-    au Filetype ocaml   " Respect package order (merlin should be after ocp-index)
-    au Filetype ocaml   if count(s:opam_available_tools, tool) > 0
-    au Filetype ocaml     call s:opam_configuration[tool]()
-    au Filetype ocaml   endif
-    au Filetype ocaml endfor
-    " ## end of OPAM user-setup addition for vim / base ## keep this line
-augroup END

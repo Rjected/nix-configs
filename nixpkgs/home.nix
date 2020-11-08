@@ -8,6 +8,7 @@ let
     ./taskwarrior.nix
   ];
   laptopImports = [
+    ./tmux.nix
     ./i3.nix
     ./HighDpiCursor.nix
     ./alacritty.nix
@@ -62,6 +63,14 @@ in
     unzip
     imagemagick
     feh
+
+    # vscode but remote
+    code-server
+    docker-compose
+
+    # vnc
+    tigervnc
+    zip
 
     # Monitoring and stuff
     htop
@@ -118,7 +127,7 @@ in
     python3Packages.pytest
     python3Packages.flake8
     python3Packages.pylint
-    python3Packages.jedi
+    vimPlugins.jedi-vim # this is because python3Packages.jedi
     # python3Packages.python-language-server
 
     # Streaming
@@ -130,12 +139,19 @@ in
     # this is a really amazing screenshot tool
     flameshot
 
+    # some rust stuff
+    rustup
+
     # we need audio control
     pavucontrol
 
+    # ctags
+    universal-ctags
+
     # nvtop, also for fun
     nvtop
-    
+    busybox
+
   ];
 
   home.sessionVariables = {

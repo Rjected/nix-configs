@@ -37,6 +37,7 @@ in {
 
       keybindings = lib.mkOptionDefault {
         "${mod}+space" = "exec --no-startup-id \"${pkgs.rofi}/bin/rofi -combi-modi 'window,drun,run,ssh' -show drun -sidebar-mode\"";
+        "${mod}+o" = "exec --no-startup-id \"${pkgs.rofi}/bin/rofi -combi-modi 'window,drun,run,ssh' -show drun -sidebar-mode\"";
 
         # Focus
         "${mod}+h" = "focus left";

@@ -16,15 +16,11 @@ in
     mosh
     aria
     taskwarrior
+    yarn # used in vimrc
   ];
 
   programs.fish = {
     inherit shellAliases;
     enable = true;
-    promptInit = ''
-      function fish_greeting
-        task
-      end
-    '';
   };
 }

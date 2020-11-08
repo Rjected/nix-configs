@@ -27,29 +27,70 @@ in
   boot.loader.grub.useOSProber = true;
 
   # get the rtl88 drivers for the trendnet usb adapter
-  boot.extraModulePackages = with config.boot.kernelPackages; [
-    rtl88x2bu
-    rtl8814au
-  ];
+  # boot.extraModulePackages = with config.boot.kernelPackages; [
+  #   rtl88x2bu
+  #   rtl8814au
+  # ];
 
   # Allow nonfree packages
   nixpkgs.config.allowUnfree = true;
 
-  networking.hostName = "dan-nixos-laptop"; # Define your hostname.
+  networking = {
+    hostName = "dan-nixos-laptop";
+    useDHCP = false;
+    networkmanager = {
+      enable = true;
+    };
+    nameservers = [
+      "8.8.8.8"
+      "1.1.1.1"
+      "8.8.4.4"
+      "2001:4860:4860::8888"
+    ];
+    interfaces = {
+      wlp2s0 = {
+        useDHCP = false;
+        ipv4.addresses = [
+          {
+            address = "192.168.111.117";
+            prefixLength = 16;
+          }
+        ];
+      };
+    };
+    firewall = {
+      enable = false;
+      # allowedUDPPorts = [
+      #   41641
+      #   61000
+      #   32768
+      # ];
+      # allowedTCPPorts = [
+      #   8008
+      #   8009
+      #   5900
+      #   5901
+      #   5902
+      #   8080
+      #   3000
+      # ];
+    };
+  };
+  # networking.hostName = "dan-nixos-laptop"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
-  networking.useDHCP = false;
-  networking.interfaces.wlp2s0.useDHCP = true;
+  # networking.useDHCP = false;
+  # networking.interfaces.wlp2s0.useDHCP = false;
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Use NetworkManager for networking
-  networking.networkmanager.enable = true;
+  # networking.networkmanager.enable = true;
 
   # Select internationalisation properties.
   # i18n.defaultLocale = "en_US.UTF-8";
@@ -76,16 +117,21 @@ in
   #   pinentryFlavor = "gnome3";
   # };
 
+  # set fish by default
+  programs.fish.enable = true;
+
   # List services that you want to enable:
 
+  # Tailscale is going to be included here
+  services.tailscale.enable = true;
+
   # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
+  services.openssh.enable = true;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
-  networking.firewall.enable = false;
 
   # Enable CUPS to print documents.
   # services.printing.enable = true;
@@ -137,6 +183,11 @@ in
   # set the environment to nvidia offload
   environment.systemPackages = [
     nvidia-offload
+
+    # we love tailscale
+    pkgs.tailscale
+    pkgs.kubernetes
+    pkgs.kubectl
   ];
 
   # === BLUETOOTH SETTINGS ===
@@ -150,7 +201,10 @@ in
   services.blueman.enable = true;
 
   # === DOCKER SETTINGS ===
-  virtualisation.docker.enable = true;
+  virtualisation.docker = {
+    enable = true;
+    # extraOptions = '' --network=host '';
+  };
 
   # === NVIDIA SETTINGS ===
   # Make sure that nvidia optimus is turned on
@@ -175,12 +229,7 @@ in
 
   # Enable kubernetes
   services.kubernetes = {
-    apiserver.enable = true;
-    controllerManager.enable = true;
-    scheduler.enable = true;
-    addonManager.enable = true;
-    proxy.enable = true;
-    flannel.enable = true;
+    addons.dns.enable = true;
     masterAddress = "localhost";
   };
 
@@ -194,6 +243,7 @@ in
   users.users.rjected = {
     isNormalUser = true;
     extraGroups = [ "docker" "audio" "wheel" "networkmanager" ]; # Enable ‘sudo’ for the user.
+    shell = pkgs.fish;
   };
 
   # === FONTS ===
