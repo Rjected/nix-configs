@@ -119,6 +119,7 @@ in
     gopls
     golangci-lint
     docker
+    skaffold
 
     # LaTeX & tools
     texlive.combined.scheme-full
