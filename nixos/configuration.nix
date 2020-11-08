@@ -19,6 +19,7 @@ in
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ./kubernetes-node.nix
     ];
 
   # Use the systemd-boot EFI boot loader.
@@ -226,18 +227,6 @@ in
     fade            = false;
     shadow          = false;
   };
-
-  # Enable kubernetes
-  services.kubernetes = {
-    addons.dns.enable = true;
-    masterAddress = "localhost";
-  };
-
-  services.kubernetes.roles = [ "node" ];
-
-  # this option is defined for user safety, this is NOT default nor will it be
-  # any time soon. This is fine, just needs to be properly documented
-  services.kubernetes.kubelet.extraOpts = "--fail-swap-on=false";
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.rjected = {
