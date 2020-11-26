@@ -120,6 +120,7 @@ in
     golangci-lint
     docker
     skaffold
+    kompose
 
     # LaTeX & tools
     texlive.combined.scheme-full
