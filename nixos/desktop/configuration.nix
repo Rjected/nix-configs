@@ -14,12 +14,14 @@ in
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./kubernetes-master.nix
+      ./docker.nix
     ];
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub.useOSProber = true;
+  boot.extraModprobeConfig = "options kvm_intel nested=1";
   boot.extraModulePackages = with config.boot.kernelPackages; [
     rtl88x2bu
   ];
@@ -27,7 +29,7 @@ in
   # Allow nonfree packages
   nixpkgs.config.allowUnfree = true;
 
-  networking.hostName = "nixos-dan-sff"; # Define your hostname.
+  networking.hostName = "dan-nixos-sff"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
@@ -87,10 +89,15 @@ in
   #   60003
   #   60004
   # ];
-  environment.systemPackages = [ rjected.tailscale ];
+  environment.systemPackages = [
+    pkgs.v4l-utils
+    rjected.tailscale
+  ];
 
   # Or disable the firewall altogether.
-  networking.firewall.enable = false;
+  virtualisation = {
+    libvirtd.enable = true;
+  };
 
   # Enable CUPS to print documents.
   # services.printing.enable = true;
@@ -165,7 +172,7 @@ in
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.rjected = {
     isNormalUser = true;
-    extraGroups = [ "audio" "wheel" "networkmanager" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "docker" "audio" "wheel" "networkmanager" ]; # Enable ‘sudo’ for the user.
   };
 
   # === FONTS ===

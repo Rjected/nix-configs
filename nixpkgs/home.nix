@@ -150,6 +150,16 @@ in
     # ctags
     universal-ctags
 
+    # minikube
+    minikube
+
+    # needing this is stupid just write tests in ur fav language
+    postman
+
+    geekbench
+    # ugh electron apps
+    discord
+
     # nvtop, also for fun
     nvtop
     busybox

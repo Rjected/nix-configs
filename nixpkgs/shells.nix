@@ -6,6 +6,7 @@ let
     ls = "exa";
     download = "aria2c --file-allocation=none --seed-time=0";
     t = "task";
+    k = "kubectl";
   };
 in
 {
@@ -16,6 +17,7 @@ in
     mosh
     aria
     taskwarrior
+    kubectl
     yarn # used in vimrc
   ];
 
