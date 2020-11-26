@@ -67,7 +67,6 @@ in
 
     # vscode but remote
     code-server
-    docker-compose
 
     # vnc
     tigervnc
@@ -118,6 +117,8 @@ in
     gopls
     golangci-lint
     docker
+    docker-compose
+    podman
     skaffold
     kompose
 

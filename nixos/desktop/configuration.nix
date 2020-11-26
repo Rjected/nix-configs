@@ -15,6 +15,7 @@ in
       ./hardware-configuration.nix
       ./kubernetes-master.nix
       ./docker.nix
+      ./virtualbox.nix
     ];
 
   # Use the systemd-boot EFI boot loader.
@@ -99,6 +100,11 @@ in
     libvirtd.enable = true;
   };
 
+  # this allows us to handle access
+  security = {
+    polkit.enable = true;
+  };
+
   # Enable CUPS to print documents.
   # services.printing.enable = true;
   services.jellyfin = {
@@ -172,7 +178,7 @@ in
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.rjected = {
     isNormalUser = true;
-    extraGroups = [ "docker" "audio" "wheel" "networkmanager" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "kvm" "libvirtd" "docker" "audio" "wheel" "networkmanager" "user-with-access-to-virtualbox" ]; # Enable ‘sudo’ for the user.
   };
 
   # === FONTS ===
