@@ -32,3 +32,15 @@ Then, run `nixos-rebuild switch` and `home-manager switch`.
 ### i3 Config options
 Just because this info is kind of annoying to find, [here are all the options for i3](https://github.com/rycee/home-manager/blob/master/modules/services/window-managers/i3-sway/lib/options.nix), and
 [here are all the default config options](https://github.com/rycee/home-manager/blob/master/modules/services/window-managers/i3-sway/i3.nix).
+
+### Cheat sheet
+In order to update packages for the OS (not managed by home-manager), do the following:
+```
+sudo nixos-rebuild --upgrade switch
+```
+In order to update packages managed by home-manager, do the
+following:
+```
+nix-channel --update
+home-manager switch
+```

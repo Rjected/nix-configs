@@ -96,7 +96,6 @@ in
     # compilation stuff
     llvm
     bazel
-    bear
     gnumake
     autoconf
     automake
