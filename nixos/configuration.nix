@@ -204,7 +204,7 @@ in
   # === DOCKER SETTINGS ===
   virtualisation.docker = {
     enable = true;
-    # extraOptions = '' --network=host '';
+    extraOptions = ''--dns 8.8.8.8 --bridge 8.8.4.4 --bridge virbr0'';
   };
 
   # === NVIDIA SETTINGS ===
