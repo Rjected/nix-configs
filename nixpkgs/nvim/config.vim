@@ -389,6 +389,9 @@ augroup go
   " Update signature help on jump placeholder.
   autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
 
+  au Filetype go let g:tagbar_width = 45
+  au Filetype go autocmd VimEnter * nested :TagbarOpen
+
 augroup end
 
 "" Set up column width for certain file types

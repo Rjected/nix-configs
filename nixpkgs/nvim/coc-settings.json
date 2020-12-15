@@ -12,8 +12,7 @@
         "analyses": {
           "unusedparams": true
         },
-        "staticcheck": true,
-        "lintTool": "golint"
+        "staticcheck": true
       }
     },
     "ccls": {
