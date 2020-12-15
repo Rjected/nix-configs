@@ -2,7 +2,7 @@
 let
   kubeMasterIP = "100.90.44.114";
   kubeMasterHostname = "dan-nixos-sff";
-  kubeMasterAPIServerPort = 8080;
+  kubeMasterAPIServerPort = "8080";
 in
 {
   networking.extraHosts = "${kubeMasterIP} ${kubeMasterHostname}";
@@ -14,13 +14,19 @@ in
   ];
 
   # Enable kubernetes
-  services.kubernetes = {
-    roles = ["master"];
-    apiserver.insecurePort = 8080;
-    addons.dns.enable = true;
-    addons.dashboard.enable = true;
+  services.kubernetes = let
+    api = "https://${kubeMasterHostname}:${kubeMasterAPIServerPort}";
+  in
+  {
+    roles = ["node"];
+    apiserverAddress = api;
     masterAddress = kubeMasterHostname;
     easyCerts = true;
+    addons.dns.enable = true;
+    kubelet = {
+      kubeconfig.server = api;
+      extraOpts = "--fail-swap-on=false";
+    };
   };
 
 }

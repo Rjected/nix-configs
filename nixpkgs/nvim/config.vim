@@ -39,6 +39,7 @@ Plug 'rust-lang/rust.vim'
 Plug 'lervag/vimtex'
 Plug 'honza/vim-snippets'
 Plug 'AlessandroYorba/alduin'
+Plug 'AlessandroYorba/sierra'
 Plug 'xolox/vim-misc'
 Plug 'xolox/vim-session'
 Plug 'fatih/vim-go'
@@ -173,7 +174,7 @@ set nu rnu
 
 let no_buffers_menu=1
 if !exists('g:not_finish_vimplug')
-  colorscheme alduin
+  colorscheme sierra
 endif
 
 set mousemodel=popup
@@ -265,10 +266,6 @@ let g:NERDTreeWinSize = 35
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*.pyc,*.db,*.sqlite
 nnoremap <silent> <F2> :NERDTreeFind<CR>
 nnoremap <silent> <F3> :NERDTreeToggle<CR>
-
-"" Taglist settings
-let g:tagbar_width = 45
-autocmd VimEnter * nested :TagbarOpen
 
 " grep.vim
 nnoremap <silent> <leader>f :Rgrep<CR>

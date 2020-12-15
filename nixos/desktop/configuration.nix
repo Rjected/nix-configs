@@ -14,8 +14,10 @@ in
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./kubernetes-master.nix
+      ./kubernetes-node.nix
       ./docker.nix
       ./virtualbox.nix
+      ./weechat.nix
     ];
 
   # Use the systemd-boot EFI boot loader.
@@ -45,6 +47,9 @@ in
 
   # Use NetworkManager for networking
   networking.networkmanager.enable = true;
+
+  # disable firewall
+  networking.firewall.enable = false;
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
@@ -93,6 +98,7 @@ in
   environment.systemPackages = [
     pkgs.v4l-utils
     rjected.tailscale
+    pkgs.noisetorch
   ];
 
   # Or disable the firewall altogether.
@@ -109,6 +115,14 @@ in
   # services.printing.enable = true;
   services.jellyfin = {
     enable = true;
+  };
+
+  # enable rss stuff
+  services.miniflux = {
+    enable = true;
+    config = {
+      LISTEN_ADDR = "100.90.44.114:9695";
+    };
   };
 
   # Enable sound.

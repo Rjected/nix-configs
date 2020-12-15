@@ -76,10 +76,6 @@ in
     htop
     bpytop
 
-    # weechat
-    weechat
-    # https://www.reddit.com/r/siacoin/comments/iox6ly/proposal_the_sia_foundation/
-
     # signal!!
     signal-desktop
 
@@ -121,6 +117,10 @@ in
     podman
     skaffold
     kompose
+
+    # docker-machine
+    docker-machine
+    docker-machine-kvm2
 
     # LaTeX & tools
     texlive.combined.scheme-full
@@ -165,6 +165,7 @@ in
     nvtop
     busybox
     mosh
+    steam
 
     # annoying programs
     zoom-us
