@@ -166,6 +166,7 @@ in
     busybox
     mosh
     steam
+    goimports
 
     # annoying programs
     zoom-us

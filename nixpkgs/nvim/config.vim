@@ -394,6 +394,17 @@ augroup go
 
 augroup end
 
+augroup rust
+  " Setup formatexpr specified filetype(s).
+  autocmd FileType rust setl formatexpr=CocAction('formatSelected')
+  " Update signature help on jump placeholder.
+  autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
+
+  au Filetype rust let g:tagbar_width = 45
+  au Filetype rust autocmd VimEnter * nested :TagbarOpen
+
+augroup end
+
 "" Set up column width for certain file types
 augroup filetypedetect
   "" Programming Languages
