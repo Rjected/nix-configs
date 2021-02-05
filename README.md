@@ -44,3 +44,7 @@ following:
 nix-channel --update
 home-manager switch
 ```
+
+### That rust.nix file in the root of the repo
+I have not figured out enough nix to figure out what to do with this, but it's what I use whenever I am working with rust.
+I place it in `~/Projects/` and do `nix-shell rust.nix`, then navigate to the project I want to work on.
