@@ -2,8 +2,11 @@
 
 {
   home.packages = with pkgs; [
-    # Let's get gitandtools gh
+    # Let's get gh
     gitAndTools.gh
+    gitAndTools.delta
+    bat
+    less
   ];
 
   programs.git = {
@@ -12,8 +15,16 @@
     userEmail = "dan@dancline.net";
 
     extraConfig = {
-      core.editor = "nvim";
+      core = {
+        pager = "delta";
+        editor = "nvim";
+      };
+      delta = {
+        features = "side-by-side line-numbers decorations";
+        whitespace-error-style = "22 reverse";
+      };
       pull.rebase = "true";
+      interactive.diffFilter = "delta --color-only";
     };
   };
 }

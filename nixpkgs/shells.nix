@@ -13,7 +13,6 @@ in
   home.packages = with pkgs; [
     # programs used for shell stuff with aliases and everything else
     exa
-    bat
     mosh
     aria
     taskwarrior
@@ -22,7 +21,7 @@ in
   ];
 
   programs.fish = {
-    inherit shellAliases;
-    enable = true;
+    # inherit shellAliases;
+    # enable = true;
   };
 }

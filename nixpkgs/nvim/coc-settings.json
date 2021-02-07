@@ -25,5 +25,6 @@
         }
       }
     }
-  }
+  },
+  "rust-analyzer.serverPath": "/home/rjected/.nix-profile/bin/rust-analyzer"
 }

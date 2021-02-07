@@ -16,7 +16,6 @@ let
     ./autorandr.nix
     ./bluetooth.nix
     ./spotify.nix
-    ./google-cast.nix
     ./rescuetime.nix
   ];
 in
@@ -54,8 +53,10 @@ in
   home.username = "rjected";
   home.homeDirectory = "/home/rjected";
 
-  # Add utilities such as bat
   home.packages = with pkgs; [
+    # add fish (fixes issue with nixpkgs#108897)
+    fish
+
     # the basics
     firefox
     neovim
@@ -99,12 +100,12 @@ in
     pkgconfig
     m4
     utillinux
+    procps
 
     # Nodejs & tools
 
     # C++ & tools
     clang-tools
-    clang
     cpplint
     ccls
 
@@ -143,7 +144,7 @@ in
     flameshot
 
     # some rust stuff
-    rustup
+    act
 
     # we need audio control
     pavucontrol
