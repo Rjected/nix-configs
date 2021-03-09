@@ -6,7 +6,7 @@
       "filetypes": ["go"],
       "initializationOptions": {
         "usePlaceholders": true,
-        "codelens": {
+        "codelenses": {
           "gc_details": true
         },
         "analyses": {

@@ -13,8 +13,6 @@ in
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      ./kubernetes-master.nix
-      ./kubernetes-node.nix
       ./docker.nix
       ./virtualbox.nix
       ./weechat.nix

@@ -373,7 +373,7 @@ augroup go
   au FileType go nmap <Leader>dv <Plug>(go-doc-vertical)
   au FileType go nmap <Leader>db <Plug>(go-doc-browser)
 
-  au FileType go nmap <leader>r  <Plug>(go-run)
+  au FileType go nmap <leader>ru  <Plug>(go-run)
   au FileType go nmap <leader>t  <Plug>(go-test)
   au FileType go nmap <Leader>gt <Plug>(go-coverage-toggle)
   au FileType go nmap <Leader>i <Plug>(go-info)
@@ -554,6 +554,7 @@ nnoremap <Leader>o :.Gbrowse<CR>
 
 " noremap <silent> <C-]> <Plug>(coc-definition)
 " noremap <silent> <C-\> <Plug>(coc-references)
+nmap <leader>rn <Plug>(coc-rename)
 nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)

@@ -17,7 +17,9 @@
   };
 
   networking.bridges.docker0 = {
-    interfaces = [];
+    interfaces = [
+      "wlp2s0"
+    ];
   };
   networking.networkmanager.unmanaged = [ "docker0" ];
 }
