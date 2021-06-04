@@ -21,8 +21,12 @@ in
     yarn # used in vimrc
   ];
 
-  programs.fish = {
-    # inherit shellAliases;
-    # enable = true;
-  };
+  # programs.fish = {
+  #   # inherit shellAliases;
+  #   # shellAliases = shellAliases;
+  #   enable = true;
+  #   interactiveShellInit = ''
+  #     direnv hook fish | source
+  #   '';
+  # };
 }

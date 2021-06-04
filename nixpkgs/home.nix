@@ -33,11 +33,11 @@ in
       path = "…";
     };
 
-    firefox = {
-      enable = true;
-    };
+    # firefox = {
+    #   enable = true;
+    # };
 
-};
+  };
 
   # TODO: change this depending on the device. Use the same strategy to
   # determine which devices should be replicating the homedir and which ones
@@ -111,8 +111,8 @@ in
 
     # Go & tools
     go
-    gopls
-    golangci-lint
+    # gopls
+    # golangci-lint
     docker
     docker-compose
     podman
@@ -125,6 +125,9 @@ in
 
     # LaTeX & tools
     texlive.combined.scheme-full
+
+    # node packages
+    nodePackages.bash-language-server
 
     # Python & tools
     python39Full
@@ -145,6 +148,7 @@ in
 
     # some rust stuff
     act
+    awscli2
 
     # we need audio control
     pavucontrol
@@ -167,11 +171,18 @@ in
     mosh
     steam
     goimports
+    ledger-live-desktop
+    element-desktop
 
     # annoying programs
     zoom-us
     google-chrome
+
+    # direnv for lorri
+    direnv
   ];
+
+  services.lorri.enable = true;
 
   # to fix a bug
   manual.manpages.enable = false;
