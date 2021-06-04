@@ -16,10 +16,10 @@
     extraOptions="--add-runtime containerd=${pkgs.containerd}/bin/containerd --add-runtime runsc=${pkgs.gvisor}/bin/runsc --dns 8.8.8.8 --dns 8.8.4.4";
   };
 
-  networking.bridges.docker0 = {
-    interfaces = [
-      "wlp2s0"
-    ];
-  };
-  networking.networkmanager.unmanaged = [ "docker0" ];
+  # networking.bridges.docker0 = {
+  #   interfaces = [
+  #     "wlp3s0"
+  #   ];
+  # };
+  # networking.networkmanager.unmanaged = [ "docker0" ];
 }

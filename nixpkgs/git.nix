@@ -23,6 +23,7 @@
         features = "side-by-side line-numbers decorations";
         whitespace-error-style = "22 reverse";
       };
+      init.defaultBranch = "main";
       pull.rebase = "true";
       interactive.diffFilter = "delta --color-only";
     };

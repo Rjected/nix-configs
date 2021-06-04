@@ -24,6 +24,12 @@
             "directory": "/tmp/ccls"
         }
       }
+    },
+    "bash": {
+      "command": "bash-language-server",
+      "args": ["start"],
+      "filetypes": ["sh"],
+      "ignoredRootPaths": ["~"]
     }
   },
   "rust-analyzer.serverPath": "/home/rjected/.nix-profile/bin/rust-analyzer"

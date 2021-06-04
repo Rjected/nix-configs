@@ -39,14 +39,14 @@
         config = {
           "DP-0" = {
             enable = true;
-            position = "3840x0";
+            primary = true;
+            position = "0x0";
             mode = "3840x2160";
           };
           "DP-2" = {
             enable = true;
-            primary = true;
             mode = "3840x2160";
-            position = "0x0";
+            position = "3840x0";
           };
         };
       };
