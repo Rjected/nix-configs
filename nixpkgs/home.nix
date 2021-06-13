@@ -18,6 +18,7 @@ let
     ./spotify.nix
     ./rescuetime.nix
   ];
+  vimConfig = builtins.readFile ./nvim/init.vim;
 in
 {
   # unfortunately not everything is free
@@ -37,11 +38,7 @@ in
       enable = true;
     };
 
-    neovim = {
-      enable = true;
-    };
-
-  };
+};
 
   # TODO: change this depending on the device. Use the same strategy to
   # determine which devices should be replicating the homedir and which ones
@@ -59,22 +56,21 @@ in
 
     # the basics
     firefox
-    neovim
     pciutils
     nodejs
     unzip
     imagemagick
     feh
 
-    # vscode but remote
-    code-server
+    # age and pgp because i need simple sig verification
+    age
 
     # vnc
     tigervnc
     zip
 
     # Monitoring and stuff
-    htop
+    gotop
     bpytop
 
     # signal!!
@@ -82,6 +78,12 @@ in
 
     # ug chrome
     # google-chrome
+    minecraft
+
+    usbutils
+
+    monero-gui
+    ledger-live-desktop
 
     # pdf editor best
     zathura
@@ -164,7 +166,6 @@ in
 
     # nvtop, also for fun
     nvtop
-    busybox
     mosh
     steam
     goimports
@@ -179,6 +180,11 @@ in
 
   home.sessionVariables = {
     EDITOR = "nvim";
+  };
+
+  programs.neovim = {
+    enable = true;
+    extraConfig = vimConfig;
   };
 
   # This value determines the Home Manager release that your

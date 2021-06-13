@@ -12,6 +12,7 @@ in
 {
   home.packages = with pkgs; [
     # programs used for shell stuff with aliases and everything else
+    gnutar
     exa
     mosh
     aria

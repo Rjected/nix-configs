@@ -16,11 +16,18 @@ nvidia-offload = pkgs.writeShellScriptBin "nvidia-offload" ''
   '';
 in
 {
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-      ./kubernetes-node.nix
-    ];
+  imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+    # ./kubernetes-node.nix
+  ];
+
+  nix = {
+    package = pkgs.nixFlakes;
+    extraOptions = ''
+      experimental-features = nix-command flakes
+    '';
+  };
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
@@ -109,22 +116,28 @@ in
   #   wget vim
   # ];
 
+  hardware.ledger.enable = true;
+
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  #   pinentryFlavor = "gnome3";
-  # };
+  programs.gnupg.agent = {
+    enable = true;
+    enableSSHSupport = true;
+    pinentryFlavor = "gnome3";
+  };
 
   # set fish by default
   programs.fish.enable = true;
+  programs.adb.enable = true;
 
   # List services that you want to enable:
 
   # Tailscale is going to be included here
   services.tailscale.enable = true;
+
+  # Add tor
+  services.tor.enable = true;
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
@@ -187,8 +200,7 @@ in
 
     # we love tailscale
     pkgs.tailscale
-    pkgs.kubernetes
-    pkgs.kubectl
+    pkgs.tor-browser-bundle-bin
   ];
 
   # === BLUETOOTH SETTINGS ===
@@ -204,7 +216,7 @@ in
   # === DOCKER SETTINGS ===
   virtualisation.docker = {
     enable = true;
-    extraOptions = ''--dns 8.8.8.8 --bridge 8.8.4.4 --bridge virbr0'';
+    extraOptions = ''--dns 8.8.8.8 --dns 8.8.4.4'';
   };
 
   # === NVIDIA SETTINGS ===
@@ -231,7 +243,7 @@ in
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.rjected = {
     isNormalUser = true;
-    extraGroups = [ "docker" "audio" "wheel" "networkmanager" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "docker" "audio" "wheel" "networkmanager" "adbusers"]; # Enable ‘sudo’ for the user.
     shell = pkgs.fish;
   };
 
