@@ -8,9 +8,6 @@
     '';
   };
 
-  system.configurationRevision = nixpkgs.lib.mkIf (self ? rev) self.rev;
-
-
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub.useOSProber = true;
@@ -61,9 +58,9 @@
   services.tailscale.enable = true;
 
   # TODO: REMOVE!!! - might have to do with tailscale or something else
-  nixpkgs.config.permittedInsecurePackages = [
-    "go-1.14.15"
-  ];
+  # nixpkgs.config.permittedInsecurePackages = [
+  #   "go-1.14.15"
+  # ];
 
   # set fish by default
   programs.fish.enable = true;

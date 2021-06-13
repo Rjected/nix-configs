@@ -22,9 +22,9 @@
     enable = true;
     package = pkgs.pulseaudioFull;
     extraModules = [ pkgs.pulseaudio-modules-bt ];
-    extraConfig = "
+    extraConfig = ''
       load-module module-switch-on-connect
-    ";
+    '';
   };
 
   users.users.rjected.extraGroups = [ "audio" ];
