@@ -1,15 +1,21 @@
 # This module defines a small base for NixOS configurations.
-{config, pkgs, ...}:
+{ config, pkgs, ... }:
 {
-  imports = [
-  ];
-
   nix = {
-    package = pkgs.nixFlakes;
+    package = pkgs.nixUnstable;
     extraOptions = ''
       experimental-features = nix-command flakes
     '';
   };
+
+  system.configurationRevision = nixpkgs.lib.mkIf (self ? rev) self.rev;
+
+
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.grub.useOSProber = true;
+  boot.extraModprobeConfig = "options kvm_intel nested=1";
+  boot.loader.grub.device = "nodev";
 
   # Allow nonfree packages
   nixpkgs.config.allowUnfree = true;
