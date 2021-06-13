@@ -4,7 +4,6 @@ let
   baseImports = [
     ./git.nix
     ./shells.nix
-    ./vnc.nix
     ./taskwarrior.nix
     ./vlc.nix
   ];
@@ -65,8 +64,7 @@ in
     # age and pgp because i need simple sig verification
     age
 
-    # vnc
-    tigervnc
+    # zip
     zip
 
     # Monitoring and stuff
