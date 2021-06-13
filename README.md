@@ -21,13 +21,12 @@ sudo nix-channel --update
 
 Make sure git is not globally installed, so use `nix-env --uninstall git` if you need to.
 Next, run a new `nix-shell -p git` and clone this repo into `~/Projects/`.
-Finally, symlink the `nixos` and `nixpkgs` directories into `/etc/nixos` and `~/.config/nixpkgs`
-respectively:
+Navigate to `~/Projects/nix-configs/nixos/` and build the flake for the device desired:
 ```sh
-ln -s ~/Projects/nix-configs/nixos/ /etc/nixos
-ln -s ~/Projects/nix-configs/nixpkgs/ ~/.config/nixpkgs
+sudo nixos-rebuild switch --impure --flake '.#desired-device-here'
 ```
-Then, run `nixos-rebuild switch` and `home-manager switch`.
+Currently, the devices available are `dan-nixos-sff` and `dan-nixos-laptop`.
+Then, run `sudo nixos-rebuild switch` and `home-manager switch`.
 
 ### i3 Config options
 Just because this info is kind of annoying to find, [here are all the options for i3](https://github.com/rycee/home-manager/blob/master/modules/services/window-managers/i3-sway/lib/options.nix), and
