@@ -31,7 +31,6 @@ in
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub.useOSProber = true;
-  boot.loader.grub.device = "nodev";
   boot.extraModprobeConfig = "options kvm_intel nested=1";
 
   networking.hostName = "dan-nixos-laptop";

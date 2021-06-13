@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, pkgsi686linux, ... }:
 
 let
   baseImports = [
@@ -85,6 +85,7 @@ in
 
     # pdf editor best
     zathura
+    minecraft
 
     # rg
     ripgrep
