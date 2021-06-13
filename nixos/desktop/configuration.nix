@@ -3,19 +3,11 @@
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
 { config, pkgs, ... }:
-
-let
-  rjected = import
-  (builtins.fetchTarball https://github.com/rjected/nixpkgs/archive/master.tar.gz)
-  {config = config.nixpkgs.config;};
-in
 {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      ./docker.nix
       ./virtualbox.nix
-      ./weechat.nix
     ];
 
   # Use the systemd-boot EFI boot loader.
@@ -95,7 +87,7 @@ in
   # ];
   environment.systemPackages = [
     pkgs.v4l-utils
-    rjected.tailscale
+    pkgs.tailscale
     pkgs.noisetorch
   ];
 
@@ -110,18 +102,7 @@ in
   };
 
   # Enable CUPS to print documents.
-  # services.printing.enable = true;
-  services.jellyfin = {
-    enable = true;
-  };
-
-  # enable rss stuff
-  services.miniflux = {
-    enable = true;
-    config = {
-      LISTEN_ADDR = "100.90.44.114:9695";
-    };
-  };
+  services.printing.enable = true;
 
   # Enable sound.
   sound.enable = true;
@@ -134,7 +115,7 @@ in
     # Enable bluetooth
     bluetooth = {
       enable = true;
-      config = {
+      settings = {
         General = {
           Enable = "Source,Sink,Media,Socket";
         };
