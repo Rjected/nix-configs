@@ -31,12 +31,9 @@
     shadow          = false;
   };
 
-  # Make sure nerd fonts are imported
-  nixpkgs.overlays = [ (import ./nix-nerd-fonts-overlay/default.nix) ];
-
   # Install noto sans
   fonts.fonts = with pkgs; [
-    nerd-fonts.noto
+    (nerdfonts.override { fonts = [ "Noto" ]; })
     noto-fonts
     noto-fonts-cjk
     noto-fonts-emoji

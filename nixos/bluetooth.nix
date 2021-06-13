@@ -3,7 +3,7 @@
   # Enable bluetooth
   hardware.bluetooth = {
     enable = true;
-    settings = {
+    config = {
       General = {
         Enable = "Source,Sink,Media,Socket";
       };
@@ -11,5 +11,5 @@
   };
 
   services.blueman.enable = true;
-  users.user.rjected.extraGroups = [ "audio" ]
+  users.users.rjected.extraGroups = [ "audio" ];
 }
