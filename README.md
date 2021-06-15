@@ -23,7 +23,7 @@ Make sure git is not globally installed, so use `nix-env --uninstall git` if you
 Next, run a new `nix-shell -p git` and clone this repo into `~/Projects/`.
 Navigate to `~/Projects/nix-configs/nixos/` and build the flake for the device desired:
 ```sh
-sudo nixos-rebuild switch --impure --flake '.#desired-device-here'
+sudo nixos-rebuild switch --flake '.#desired-device-here'
 ```
 Currently, the devices available are `dan-nixos-sff` and `dan-nixos-laptop`.
 Then, run `sudo nixos-rebuild switch` and `home-manager switch`.
