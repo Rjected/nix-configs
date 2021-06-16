@@ -7,11 +7,11 @@
   outputs = { self, nixpkgs }: {
     nixosConfigurations.dan-nixos-sff = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
-      modules = [ ./desktopConfiguration.nix ];
+      modules = [ ./nixos/desktopConfiguration.nix ];
     };
     nixosConfigurations.dan-nixos-laptop = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
-      modules = [ ./laptopConfiguration.nix ];
+      modules = [ ./nixos/laptopConfiguration.nix ];
     };
   };
 }
