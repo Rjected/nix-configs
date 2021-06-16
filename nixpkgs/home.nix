@@ -20,9 +20,6 @@ let
   vimConfig = builtins.readFile ./nvim/init.vim;
 in
 {
-  # unfortunately not everything is free
-  nixpkgs.config.allowUnfree = true;
-
   # === programs settings ===
   programs = {
     # === HOME MANAGER SETTINGS ===
