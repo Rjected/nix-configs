@@ -1,13 +1,11 @@
-{ config, pkgs, pkgsi686linux, ... }:
+{ config, pkgs, lib, ... }:
 
 let
-  baseImports = [
+  imports = [
     ./git.nix
     ./shells.nix
     ./taskwarrior.nix
     ./vlc.nix
-  ];
-  laptopImports = [
     ./tmux.nix
     ./i3.nix
     ./HighDpiCursor.nix
@@ -18,6 +16,10 @@ let
     ./rescuetime.nix
   ];
   vimConfig = builtins.readFile ./nvim/init.vim;
+  ruststable = (pkgs.rust-bin.stable.latest.default.override { extensions = [
+    "rust-src" "rust-analyzer-preview" "rust-analysis" "rustfmt-preview" ];});
+  rustnightly = (pkgs.rust-bin.nightly.latest.default.override { extensions = [
+    "rust-src" "rust-analyzer-preview" "rust-analysis" "rustfmt-preview" ];});
 in
 {
   # === programs settings ===
@@ -30,16 +32,9 @@ in
       path = "…";
     };
 
-    # firefox = {
-    #   enable = true;
-    # };
-
   };
 
-  # TODO: change this depending on the device. Use the same strategy to
-  # determine which devices should be replicating the homedir and which ones
-  # should be mere clients.
-  imports = (baseImports ++ laptopImports);
+  imports = imports;
 
   # Home Manager needs a bit of information about you and the
   # paths it should manage.
@@ -125,14 +120,13 @@ in
     texlive.combined.scheme-full
 
     # node packages
-    nodePackages.bash-language-server
+    # nodePackages.bash-language-server
 
     # Python & tools
     python39Full
     python3Packages.pytest
     python3Packages.flake8
     python3Packages.pylint
-    vimPlugins.jedi-vim # this is because python3Packages.jedi
     # python3Packages.python-language-server
 
     # Streaming
@@ -178,6 +172,12 @@ in
 
     # direnv for lorri
     direnv
+    slack
+
+
+    # btc stuff
+    clightning
+    bitcoind
   ];
 
   services.lorri.enable = true;
@@ -191,7 +191,82 @@ in
 
   programs.neovim = {
     enable = true;
-    extraConfig = vimConfig;
+    # extraConfig = vimConfig;
+    withPython3 = true;
+    coc = {
+      enable = true;
+      settings = {
+        languageserver = {
+          golang = {
+            command = "gopls";
+            rootPatterns = [
+              "go.mod"
+              ".vim/"
+              ".git/"
+              ".hg/"
+            ];
+            filetypes = [ "go" ];
+            initializationOptions = {
+              usePlaceholders = true;
+              codelenses = {
+                gc_details = true;
+              };
+              analyses = {
+                unusedparams = true;
+              };
+              staticcheck = true;
+            };
+          };
+          ccls = {
+            command = "ccls";
+            rootPatterns = [
+              ".ccls"
+              "compile_commands.json"
+              ".vim/"
+              ".git/"
+              ".hg/"
+            ];
+            filetypes = [
+              "c"
+              "cpp"
+              "objc"
+              "objcpp"
+            ];
+            initializationOptions = {
+              cache = {
+                directory = "/tmp/ccls";
+              };
+            };
+          };
+          bash = {
+            command = "bash-language-server";
+            args = [ "start" ];
+            filetypes = [ "sh" ];
+            ignoredRootPaths = [ "~" ];
+          };
+          rust-analyzer = {
+            serverPath = "${pkgs.rust-analyzer}/bin/rust-analyzer";
+            rootPatterns = [
+              "Cargo.toml"
+              "Cargo.lock"
+              ".git/"
+              ".hg/"
+            ];
+            filetypes = [ "rs" ];
+          };
+        };
+      };
+    };
+    extraPackages = with pkgs; [
+      nodePackages.bash-language-server
+      python3Packages.python-language-server
+      rustnightly
+      rust-analyzer
+    ];
+    # extraPython3Packages = (ps: with ps; [ python-language-server jedi ]);
+  };
+  xdg.configFile."nvim/init.vim" = {
+    text = vimConfig;
   };
 
   # This value determines the Home Manager release that your

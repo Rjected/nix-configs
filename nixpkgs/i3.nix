@@ -5,6 +5,9 @@ let
 in {
   # we need rofi here because i3 depends on it
   home.packages = with pkgs; [
+    # For mac imitation gestures
+    libinput-gestures
+
     # Rofi > dmenu
     rofi
   ];
@@ -45,6 +48,10 @@ in {
         "${mod}+k" = "focus up";
         "${mod}+l" = "focus right";
 
+        # Workspace switching using keys
+        "${mod}+Mod1+l" = "workspace next";
+        "${mod}+Mod1+h" = "workspace prev";
+
         # Focus mode toggle (also dmenu replacement)
         "${mod}+d" = "focus mode_toggle";
 
@@ -57,5 +64,26 @@ in {
         "${mod}+Return" = "exec ${pkgs.alacritty}/bin/alacritty";
       };
     };
+  };
+  xdg.configFile."libinput-gestures.conf" = {
+    text = ''
+      gesture swipe right 4 i3-msg workspace next
+      gesture swipe left 4 i3-msg workspace prev
+    '';
+  };
+  # user needs to bu in the input group
+  systemd.user.services.libinput-gestures = {
+    Unit = {
+      Description = "Start libinput-gestures";
+      After = [ "graphical-session-pre.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+
+    Service = {
+      Environment = "PATH=${config.home.profileDirectory}/bin";
+      ExecStart = "${pkgs.libinput-gestures}/bin/libinput-gestures";
+    };
+
+    Install = { WantedBy = [ "graphical-session.target" ]; };
   };
 }
