@@ -14,6 +14,32 @@
   boot.extraModprobeConfig = "options kvm_intel nested=1";
   boot.loader.grub.device = "nodev";
 
+  # Trying to get thunderbolt dock to work with this addition
+  # boot.kernelPatches = [ {
+  #   name = "thunderbolt";
+  #   patch = null;
+  #   extraConfig = ''
+  #     THUNDERBOLT y
+  #     HOTPLUG_PCI y
+  #     HOTPLUG_PCI_ACPI y
+  #   '';
+  # } ];
+  # nixpkgs.config.packageOverrides = pkgs: {
+  #   linux = pkgs.linuxPackages.override {
+  #     extraConfig = ''
+  #       THUNDERBOLT m
+  #       CONFIG_HOTPLUG_PCI y
+  #       CONFIG_HOTPLUG_PCI_ACPI y
+  #     '';
+  #   };
+  # };
+
+
+
+  boot.kernel.sysctl = {
+    "net.ipv4.conf.all.forwarding" = "1";
+    "net.ipv6.conf.all.forwarding" = "1";
+  };
   # Allow nonfree packages
   nixpkgs.config.allowUnfree = true;
 
@@ -54,6 +80,15 @@
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
 
+  # Enable firmware updates
+  services.fwupd.enable = true;
+
+  # Enable acpid
+  services.acpid.enable = true;
+
+  # ok pulling out all the stops, let's install bolt
+  services.hardware.bolt.enable = true;
+
   # Tailscale is going to be included here
   services.tailscale.enable = true;
 
@@ -78,12 +113,23 @@
   # This allows us to handle access
   security = {
     polkit.enable = true;
+    sudo.extraRules = [
+      {
+        users = [ "rjected" ];
+        commands = [
+	  {
+            command = "ALL";
+	    options = [ "NOPASSWD" ];
+	  }
+	];
+      }
+    ];
   };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.rjected = {
     isNormalUser = true;
-    extraGroups = [ "docker" "wheel" "kvm" "libvirtd" "plugdev" ];
+    extraGroups = [ "input" "docker" "wheel" "kvm" "libvirtd" "plugdev" ];
     shell = pkgs.fish;
   };
 

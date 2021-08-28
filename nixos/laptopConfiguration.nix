@@ -36,7 +36,7 @@ in
   networking.hostName = "dan-nixos-laptop";
 
   # Set proprietary nvidia drivers
-  services.xserver.videoDrivers = [ "modesetting" "nvidia" ];
+  services.xserver.videoDrivers = [ "nvidia" "modesetting" ];
 
   # Enable touchpad support.
   services.xserver.libinput.enable = true;

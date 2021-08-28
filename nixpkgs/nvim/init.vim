@@ -36,6 +36,7 @@ call plug#begin(expand('~/.vim/plugged'))
 "*****************************************************************************
 Plug 'junegunn/fzf', {'dir': '~/.fzf','do': './install --all'}
 Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
+" Plug 'neovim/nvim-lspconfig'
 Plug 'chrisbra/Colorizer'
 Plug 'hwayne/tla.vim'
 Plug 'rust-lang/rust.vim'
@@ -47,9 +48,9 @@ Plug 'xolox/vim-misc'
 Plug 'xolox/vim-session'
 Plug 'fatih/vim-go'
 Plug 'ryanoasis/vim-devicons'
-Plug 'junegunn/fzf.vim'
 Plug 'ntpeters/vim-better-whitespace'
 Plug 'scrooloose/nerdtree'
+Plug 'pappasam/coc-jedi', { 'do': 'yarn install --frozen-lockfile && yarn build', 'branch': 'main' }
 " Plug 'jistr/vim-nerdtree-tabs'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'

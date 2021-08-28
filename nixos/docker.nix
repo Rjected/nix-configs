@@ -10,7 +10,7 @@
     enableNvidia = true;
     autoPrune.enable = true;
     # extraOptions="--add-runtime containerd=${pkgs.containerd}/bin/containerd --add-runtime runsc=${pkgs.gvisor}/bin/runsc --dns 8.8.8.8 --dns 8.8.4.4";
-    extraOptions="--add-runtime containerd=${pkgs.containerd}/bin/containerd";
+    # extraOptions="--add-runtime containerd=${pkgs.containerd}/bin/containerd";
   };
 
   # networking.bridges.docker0 = {

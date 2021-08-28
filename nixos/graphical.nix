@@ -1,11 +1,11 @@
-{config, pkgs, ...}:
+{ config, pkgs, ... }:
 {
   services.xserver = {
     enable = true;
     layout = "us";
 
     # Set proprietary nvidia drivers
-    videoDrivers = [ "nvidia" ];
+    # videoDrivers = [ "modesetting" "displaylink" "nvidia" ];
 
     desktopManager = {
       # disable basic xterm
@@ -21,6 +21,9 @@
     windowManager.i3 = {
       enable = true;
     };
+    
+    # set natural scroll because ive been converted
+    libinput.touchpad.naturalScrolling = true;
 
   };
 
