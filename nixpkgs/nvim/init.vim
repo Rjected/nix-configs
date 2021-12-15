@@ -485,12 +485,12 @@ set updatetime=300
 lua <<EOF
 require("trouble").setup {}
 
-vim.api.nvim_buf_set_keymap(0, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', {noremap = true})
-vim.api.nvim_buf_set_keymap(0, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', {noremap = true})
-vim.api.nvim_buf_set_keymap(0, 'n', 'gm', '<cmd>lua vim.lsp.buf.implementation()<CR>', {noremap = true})
-vim.api.nvim_buf_set_keymap(0, 'n', 'gy', '<cmd>lua vim.lsp.buf.typeDefinition()<CR>', {noremap = true})
-vim.api.nvim_buf_set_keymap(0, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', {noremap = true})
-vim.api.nvim_buf_set_keymap(0, 'n', 'gn', '<cmd>lua vim.lsp.buf.rename()<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', 'gm', '<cmd>lua vim.lsp.buf.implementation()<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', 'gy', '<cmd>lua vim.lsp.buf.typeDefinition()<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', 'gn', '<cmd>lua vim.lsp.buf.rename()<CR>', {noremap = true})
 
 local nvim_lsp = require'lspconfig'
 
