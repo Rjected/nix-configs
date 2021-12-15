@@ -14,6 +14,11 @@
     settings = {
       background_opacity = 0.82;
 
+      scrolling = {
+        auto_scrolling = false;
+        faux_multiplier = 0;
+      };
+
       # Font settings
       font = {
         family = "NotoMono Nerd Font Mono";

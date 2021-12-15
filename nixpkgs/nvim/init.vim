@@ -35,8 +35,9 @@ call plug#begin(expand('~/.vim/plugged'))
 "" Plug install packages
 "*****************************************************************************
 Plug 'junegunn/fzf', {'dir': '~/.fzf','do': './install --all'}
-Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
-" Plug 'neovim/nvim-lspconfig'
+Plug 'neovim/nvim-lspconfig'
+Plug 'hrsh7th/nvim-cmp'
+Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'chrisbra/Colorizer'
 Plug 'hwayne/tla.vim'
 Plug 'rust-lang/rust.vim'
@@ -50,21 +51,25 @@ Plug 'fatih/vim-go'
 Plug 'ryanoasis/vim-devicons'
 Plug 'ntpeters/vim-better-whitespace'
 Plug 'scrooloose/nerdtree'
-Plug 'pappasam/coc-jedi', { 'do': 'yarn install --frozen-lockfile && yarn build', 'branch': 'main' }
-" Plug 'jistr/vim-nerdtree-tabs'
+Plug 'kyazdani42/nvim-web-devicons'
+Plug 'folke/trouble.nvim'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'airblade/vim-gitgutter'
-Plug 'vim-scripts/grep.vim'
 Plug 'vim-scripts/CSApprox'
 Plug 'Raimondi/delimitMate'
 Plug 'majutsushi/tagbar'
 Plug 'Yggdroot/indentLine'
 Plug 'avelino/vim-bootstrap-updater'
 Plug 'sheerun/vim-polyglot'
-Plug 'antoinemadec/coc-fzf'
+Plug 'simrat39/rust-tools.nvim'
+Plug 'hrsh7th/vim-vsnip'
+Plug 'hrsh7th/cmp-path'
+Plug 'hrsh7th/cmp-buffer'
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim'
 let g:make = 'gmake'
 if exists('make')
         let g:make = 'make'
@@ -72,17 +77,9 @@ endif
 Plug 'Shougo/vimproc.vim', {'do': g:make}
 
 "" Vim-Session
-
 if v:version >= 703
   Plug 'Shougo/vimshell.vim'
 endif
-
-if v:version >= 704
-  "" Snippets
-  Plug 'SirVer/ultisnips', { 'tag': '3.2' }
-
-endif
-
 
 "*****************************************************************************
 "" Custom bundles
@@ -116,7 +113,6 @@ call plug#end()
 
 " Required:
 filetype plugin indent on
-
 
 "*****************************************************************************
 "" Basic Setup
@@ -207,10 +203,19 @@ else
     if $TERM == 'xterm'
       set term=xterm-256color
     endif
+    if $TERM == "alacritty"
+      let term=xterm-256color
+    endif
   endif
 
 endif
 
+"" this is so rust has color
+if &term == "alacritty"
+  let &term = "xterm-256color"
+endif
+let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+let &t_8b = "\<Esc>[48:2;%lu;%lu;%lum"
 
 if &term =~ '256color'
   set t_ut=
@@ -243,11 +248,10 @@ if exists("*fugitive#statusline")
   set statusline+=%{fugitive#statusline()}
 endif
 
-
 "*****************************************************************************
 "" Abbreviations
 "*****************************************************************************
-"" no one is really happy until you have this shortcuts
+"" no one is really happy until you have these shortcuts
 cnoreabbrev W! w!
 cnoreabbrev Q! q!
 cnoreabbrev Qall! qall!
@@ -270,12 +274,6 @@ let g:NERDTreeWinSize = 35
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*.pyc,*.db,*.sqlite
 nnoremap <silent> <F2> :NERDTreeFind<CR>
 nnoremap <silent> <F3> :NERDTreeToggle<CR>
-
-" grep.vim
-nnoremap <silent> <leader>f :Rgrep<CR>
-let Grep_Default_Options = '-IR'
-let Grep_Skip_Files = '*.log *.db'
-let Grep_Skip_Dirs = '.git node_modules'
 
 " vimshell.vim
 let g:vimshell_user_prompt = 'fnamemodify(getcwd(), ":~")'
@@ -300,9 +298,6 @@ endif
 "" Autocmd Rules
 "*****************************************************************************
 
-"" Start NERDTree automatically
-autocmd vimenter * NERDTree
-
 "" The PC is fast enough, do syntax highlight syncing from start unless 500 lines
 augroup vimrc-sync-fromstart
   autocmd!
@@ -325,90 +320,6 @@ augroup vimrc-make-cmake
   autocmd BufNewFile,BufRead CMakeLists.txt setlocal filetype=cmake
 augroup END
 
-autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4 softtabstop=4
-
-" Added augroup so I only start this when ocaml does
-augroup ocaml
-    " ## THIS MAKES EVERYTHING REALLY REALLY SLOW
-    " ## added by OPAM user-setup for vim / base ## 93ee63e278bdfc07d1139a748ed3fff2 ## you can edit, but keep this line
-    au Filetype ocaml let s:opam_share_dir = system("opam config var share")
-    au Filetype ocaml let s:opam_share_dir = substitute(s:opam_share_dir, '[\r\n]*$', '', '')
-
-    au Filetype ocaml let s:opam_configuration = {}
-
-    au Filetype ocaml function! OpamConfOcpIndent()
-    au Filetype ocaml   execute "set rtp^=" . s:opam_share_dir . "/ocp-indent/vim"
-    au Filetype ocaml endfunction
-    au Filetype ocaml let s:opam_configuration['ocp-indent'] = function('OpamConfOcpIndent')
-
-    au Filetype ocaml function! OpamConfOcpIndex()
-    au Filetype ocaml   execute "set rtp+=" . s:opam_share_dir . "/ocp-index/vim"
-    au Filetype ocaml endfunction
-    au Filetype ocaml let s:opam_configuration['ocp-index'] = function('OpamConfOcpIndex')
-
-    au Filetype ocaml function! OpamConfMerlin()
-    au Filetype ocaml   let l:dir = s:opam_share_dir . "/merlin/vim"
-    au Filetype ocaml   execute "set rtp+=" . l:dir
-    au Filetype ocaml endfunction
-    au Filetype ocaml let s:opam_configuration['merlin'] = function('OpamConfMerlin')
-
-    au Filetype ocaml let s:opam_packages = ["ocp-indent", "ocp-index", "merlin"]
-    au Filetype ocaml let s:opam_check_cmdline = ["opam list --installed --short --safe --color=never"] + s:opam_packages
-    au Filetype ocaml let s:opam_available_tools = split(system(join(s:opam_check_cmdline)))
-    au Filetype ocaml for tool in s:opam_packages
-    au Filetype ocaml   " Respect package order (merlin should be after ocp-index)
-    au Filetype ocaml   if count(s:opam_available_tools, tool) > 0
-    au Filetype ocaml     call s:opam_configuration[tool]()
-    au Filetype ocaml   endif
-    au Filetype ocaml endfor
-    " ## end of OPAM user-setup addition for vim / base ## keep this line
-augroup end
-
-"" Golang specific commands
-augroup go
-
-  au!
-  au Filetype go command! -bang A call go#alternate#Switch(<bang>0, 'edit')
-  au Filetype go command! -bang AV call go#alternate#Switch(<bang>0, 'vsplit')
-  au Filetype go command! -bang AS call go#alternate#Switch(<bang>0, 'split')
-  au Filetype go command! -bang AT call go#alternate#Switch(<bang>0, 'tabe')
-
-  au FileType go nmap <Leader>dd <Plug>(go-def-vertical)
-  au FileType go nmap <Leader>dv <Plug>(go-doc-vertical)
-  au FileType go nmap <Leader>db <Plug>(go-doc-browser)
-
-  au FileType go nmap <leader>r  <Plug>(go-run)
-  au FileType go nmap <leader>t  <Plug>(go-test)
-  au FileType go nmap <Leader>gt <Plug>(go-coverage-toggle)
-  au FileType go nmap <Leader>i <Plug>(go-info)
-  au FileType go nmap <silent> <Leader>l <Plug>(go-metalinter)
-  au FileType go nmap <C-g> :GoDecls<cr>
-  au FileType go nmap <leader>dr :GoDeclsDir<cr>
-  au FileType go imap <C-g> <esc>:<C-u>GoDecls<cr>
-  au FileType go imap <leader>dr <esc>:<C-u>GoDeclsDir<cr>
-  au FileType go nmap <leader>rb :<C-u>call <SID>build_go_files()<CR>
-
-  " Setup formatexpr specified filetype(s).
-  autocmd FileType go setl formatexpr=CocAction('formatSelected')
-  " Update signature help on jump placeholder.
-  autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
-
-  au Filetype go let g:tagbar_width = 45
-  au Filetype go autocmd VimEnter * nested :TagbarOpen
-
-augroup end
-
-augroup rust
-  " Setup formatexpr specified filetype(s).
-  autocmd FileType rust setl formatexpr=CocAction('formatSelected')
-  " Update signature help on jump placeholder.
-  autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
-
-  au Filetype rust let g:tagbar_width = 45
-  au Filetype rust autocmd VimEnter * nested :TagbarOpen
-
-augroup end
-
 "" Set up column width for certain file types
 augroup filetypedetect
   "" Programming Languages
@@ -427,6 +338,19 @@ set autoread
 "*****************************************************************************
 "" Mappings
 "*****************************************************************************
+
+"" Telescope commands
+" Find files using Telescope command-line sugar.
+nnoremap <leader>ff <cmd>Telescope find_files<cr>
+nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+nnoremap <leader>fb <cmd>Telescope buffers<cr>
+nnoremap <leader>fh <cmd>Telescope help_tags<cr>
+
+" Using Lua functions
+nnoremap <leader>ff <cmd>lua require('telescope.builtin').find_files()<cr>
+nnoremap <leader>fg <cmd>lua require('telescope.builtin').live_grep()<cr>
+nnoremap <leader>fb <cmd>lua require('telescope.builtin').buffers()<cr>
+nnoremap <leader>fh <cmd>lua require('telescope.builtin').help_tags()<cr>
 
 "" Vimtex commands
 noremap <Leader>tc :VimtexTocToggle<CR>
@@ -464,12 +388,6 @@ nnoremap <silent> <S-t> :tabnew<CR>
 "" Set working directory
 nnoremap <leader>. :lcd %:p:h<CR>
 
-"" Opens an edit command with the path of the currently edited file filled in
-noremap <Leader>e :e <C-R>=expand("%:p:h") . "/" <CR>
-
-"" Opens a tab edit command with the path of the currently edited file filled
-noremap <Leader>te :tabe <C-R>=expand("%:p:h") . "/" <CR>
-
 "" fzf.vim
 set wildmode=list:longest,list:full
 set wildignore+=*.o,*.obj,.git,*.rbc,*.pyc,__pycache__
@@ -488,19 +406,9 @@ if executable('rg')
   command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --hidden --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>).'| tr -d "\017"', 1, <bang>0)
 endif
 
-cnoremap <C-P> <C-R>=expand("%:p:h") . "/" <CR>
-nnoremap <silent> <leader>b :Buffers<CR>
-nnoremap <silent> <leader>e :FZF -m<CR>
-
-" snippets
-let g:UltiSnipsExpandTrigger="<tab>"
-let g:UltiSnipsJumpForwardTrigger="<tab>"
-let g:UltiSnipsJumpBackwardTrigger="<s-tab>"
-let g:UltiSnipsEditSplit="vertical"
-
 " Tagbar
-noremap <silent> <leader>tt :TagbarToggle<CR>
-let g:tagbar_autofocus = 1
+" noremap <silent> <leader>tt :TagbarToggle<CR>
+" let g:tagbar_autofocus = 1
 
 " Disable visualbell
 set noerrorbells visualbell t_vb=
@@ -553,75 +461,171 @@ vnoremap K :m '<-2<CR>gv=gv
 nnoremap <Leader>o :.Gbrowse<CR>
 
 "*****************************************************************************
-"" COC configs
+"" LSP configs
 "*****************************************************************************
 
-" noremap <silent> <C-]> <Plug>(coc-definition)
-" noremap <silent> <C-\> <Plug>(coc-references)
-nmap <silent> gd <Plug>(coc-definition)
-nmap <silent> gy <Plug>(coc-type-definition)
-nmap <silent> gi <Plug>(coc-implementation)
-nmap <silent> gr <Plug>(coc-references)
+" Set completeopt to have a better completion experience
+" :help completeopt
+" menuone: popup even when there's only one match
+" noinsert: Do not insert text until a selection is made
+" noselect: Do not select, force user to select one from the menu
+set completeopt=menuone,noinsert,noselect
 
-" Use <c-space> to trigger completion.
-if has('nvim')
-  inoremap <silent><expr> <c-space> coc#refresh()
-else
-  inoremap <silent><expr> <c-@> coc#refresh()
-endif
+" Avoid showing extra messages when using completion
+set shortmess+=c
 
-" Use K to show documentation in preview window.
-nnoremap <silent> K :call <SID>show_documentation()<CR>
+" set swap time to pretty short so we have a shorter hover time -- also changes
+" swap
+" https://www.reddit.com/r/neovim/comments/mn7coe/lsp_autoshow_diagnostics_on_hover_in_popup_window/
+set updatetime=300
 
-function! s:show_documentation()
-  if (index(['vim','help'], &filetype) >= 0)
-    execute 'h '.expand('<cword>')
-  else
-    call CocAction('doHover')
-  endif
-endfunction
+" Configure LSP through rust-tools.nvim plugin.
+" rust-tools will configure and enable certain LSP features for us.
+" See https://github.com/simrat39/rust-tools.nvim#configuration
+lua <<EOF
+require("trouble").setup {}
 
-" Highlight the symbol and its references when holding the cursor.
-autocmd CursorHold * silent call CocActionAsync('highlight')
+vim.api.nvim_buf_set_keymap(0, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', {noremap = true})
+vim.api.nvim_buf_set_keymap(0, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', {noremap = true})
+vim.api.nvim_buf_set_keymap(0, 'n', 'gm', '<cmd>lua vim.lsp.buf.implementation()<CR>', {noremap = true})
+vim.api.nvim_buf_set_keymap(0, 'n', 'gy', '<cmd>lua vim.lsp.buf.typeDefinition()<CR>', {noremap = true})
+vim.api.nvim_buf_set_keymap(0, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', {noremap = true})
+vim.api.nvim_buf_set_keymap(0, 'n', 'gn', '<cmd>lua vim.lsp.buf.rename()<CR>', {noremap = true})
 
-" coc statusline neovim
-set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
+local nvim_lsp = require'lspconfig'
 
-"*****************************************************************************
-"" Custom configs
-"*****************************************************************************
+local opts = {
+    tools = { -- rust-tools options
+        autoSetHints = true,
+        hover_with_actions = true,
+        runnables = {
+            -- whether to use telescope for selection menu or not
+            use_telescope = true
+            -- rest of the opts are forwarded to telescope
+        },
+        debuggables = {
+            -- whether to use telescope for selection menu or not
+            use_telescope = true
+            -- rest of the opts are forwarded to telescope
+        },
+        inlay_hints = {
+            -- Only show inlay hints for the current line
+            only_current_line = false,
 
-" go
-" vim-go (installed by polyglot)
-" run :GoBuild or :GoTestCompile based on the go file
-function! s:build_go_files()
-  let l:file = expand('%')
-  if l:file =~# '^\f\+_test\.go$'
-    call go#test#Test(0, 1)
-  elseif l:file =~# '^\f\+\.go$'
-    call go#cmd#Build(0)
-  endif
-endfunction
+            -- Event which triggers a refersh of the inlay hints.
+            -- You can make this "CursorMoved" or "CursorMoved,CursorMovedI" but
+            -- not that this may cause  higher CPU usage.
+            -- This option is only respected when only_current_line and
+            -- autoSetHints both are true.
+            only_current_line_autocmd = "CursorHold",
 
-let g:go_list_type = "quickfix"
-let g:go_fmt_command = "goimports"
-let g:go_fmt_fail_silently = 1
-let g:go_def_mode='gopls'
-let g:go_info_mode='gopls'
+            -- wheter to show parameter hints with the inlay hints or not
+            show_parameter_hints = true,
 
-let g:go_highlight_types = 1
-let g:go_highlight_fields = 1
-let g:go_highlight_functions = 1
-let g:go_highlight_methods = 1
-let g:go_highlight_operators = 1
-let g:go_highlight_build_constraints = 1
-let g:go_highlight_structs = 1
-let g:go_highlight_generate_tags = 1
-let g:go_highlight_space_tab_error = 0
-let g:go_highlight_extra_types = 1
+            -- prefix for parameter hints
+            parameter_hints_prefix = "<- ",
 
-"*****************************************************************************
-"*****************************************************************************
+            -- prefix for all the other hints (type, chaining)
+            other_hints_prefix = "=> ",
+
+            -- whether to align to the length of the longest line in the file
+            max_len_align = false,
+
+            -- padding from the left if max_len_align is true
+            max_len_align_padding = 1,
+
+            -- whether to align to the extreme right or not
+            right_align = false,
+
+            -- padding from the right if right_align is true
+            right_align_padding = 7,
+
+            -- The color of the hints
+            highlight = "Comment",
+        },
+        hover_actions = {
+            -- the border that is used for the hover window
+            -- see vim.api.nvim_open_win()
+            border = {
+                {"╭", "FloatBorder"}, {"─", "FloatBorder"},
+                {"╮", "FloatBorder"}, {"│", "FloatBorder"},
+                {"╯", "FloatBorder"}, {"─", "FloatBorder"},
+                {"╰", "FloatBorder"}, {"│", "FloatBorder"}
+            },
+
+            -- whether the hover action window gets automatically focused
+            auto_focus = false
+        },
+    },
+
+    -- all the opts to send to nvim-lspconfig
+    -- these override the defaults set by rust-tools.nvim
+    -- see https://github.com/neovim/nvim-lspconfig/blob/master/CONFIG.md#rust_analyzer
+    server = {
+        -- on_attach is a callback called when the language server attachs to the buffer
+        -- on_attach = on_attach,
+        cmd = { 'rust-analyzer' },
+        cmd_env = {
+            RA_LOG = 'rust_analyzer=error'
+        },
+        settings = {
+            -- to enable rust-analyzer settings visit:
+            -- https://github.com/rust-analyzer/rust-analyzer/blob/master/docs/user/generated_config.adoc
+            ["rust-analyzer"] = {
+                -- enable clippy on save
+                checkOnSave = {
+                    command = "clippy"
+                },
+            }
+        }
+    },
+}
+
+-- puts diagnostics in a hover window!!
+vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
+  vim.lsp.diagnostic.on_publish_diagnostics, {
+    virtual_text = false,
+    underline = true,
+    signs = true,
+  }
+)
+vim.cmd [[autocmd CursorHold * lua vim.lsp.diagnostic.show_line_diagnostics()]]
+vim.cmd [[autocmd CursorHoldI * silent! lua vim.lsp.buf.signature_help()]]
+
+require('rust-tools').setup(opts)
+EOF
+
+
+" Setup Completion
+" See https://github.com/hrsh7th/nvim-cmp#basic-configuration
+lua <<EOF
+local cmp = require'cmp'
+cmp.setup({
+  -- Enable LSP snippets
+  mapping = {
+    ['<C-p>'] = cmp.mapping.select_prev_item(),
+    ['<C-n>'] = cmp.mapping.select_next_item(),
+    -- Add tab support
+    ['<S-Tab>'] = cmp.mapping.select_prev_item(),
+    ['<Tab>'] = cmp.mapping.select_next_item(),
+    ['<C-d>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+    ['<C-Space>'] = cmp.mapping.complete(),
+    ['<C-e>'] = cmp.mapping.close(),
+    ['<CR>'] = cmp.mapping.confirm({
+      behavior = cmp.ConfirmBehavior.Insert,
+      select = true,
+    })
+  },
+
+  -- Installed sources
+  sources = {
+    { name = 'nvim_lsp' },
+    { name = 'path' },
+    { name = 'buffer' },
+  },
+})
+EOF
 
 "" Include user's local vim config
 if filereadable(expand("~/.vimrc.local"))
@@ -637,10 +641,8 @@ if !exists('g:airline_symbols')
   let g:airline_symbols = {}
 endif
 
-let g:airline_theme = 'powerlineish'
 let g:airline#extensions#branch#enabled = 1
 let g:airline#extensions#tabline#enabled = 1
-let g:airline#extensions#tagbar#enabled = 1
 let g:airline_skip_empty_sections = 1
 
 if !exists('g:airline_powerline_fonts')
@@ -674,67 +676,4 @@ else
   let g:airline_symbols.readonly = ''
   let g:airline_symbols.linenr = ''
 endif
-
-" Add file preview
-nnoremap <silent> <leader>e :call Fzf_dev()<CR>
-
-" ripgrep
-if executable('rg')
-
-  let $FZF_DEFAULT_COMMAND = 'rg --files --hidden --follow --glob "!.git/*"'
-  set grepprg=rg\ --vimgrep
-  command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --hidden --follow --glob "!.git/*" --glob "!*.lock" --color "always" '.shellescape(<q-args>).'| tr -d "\017"', 1, <bang>0)
-
-  " Overriding fzf.vim's default :Files command.
-  " Pass zero or one args to Files command (which are then passed to Fzf_dev). Support file path completion too.
-  command! -nargs=? -complete=file Files call Fzf_dev(<q-args>)
-
-  nnoremap <silent> <leader>e :Files<CR>
-
-endif
-
-" Files + devicons
-function! Fzf_dev(qargs)
-  let l:fzf_files_options = '--preview "bat --theme="OneHalfDark" --style=numbers,changes --color always {2..-1} | head -'.&lines.'" --expect=ctrl-t,ctrl-v,ctrl-x --multi --bind=ctrl-a:select-all,ctrl-d:deselect-all'
-
-  function! s:files(dir)
-    let l:cmd = $FZF_DEFAULT_COMMAND
-    if a:dir != ''
-      let l:cmd .= ' ' . shellescape(a:dir)
-    endif
-    let l:files = split(system(l:cmd), '\n')
-    return s:prepend_icon(l:files)
-  endfunction
-
-  function! s:prepend_icon(candidates)
-    let l:result = []
-    for l:candidate in a:candidates
-      let l:filename = fnamemodify(l:candidate, ':p:t')
-      let l:icon = WebDevIconsGetFileTypeSymbol(l:filename, isdirectory(l:filename))
-      call add(l:result, printf('%s %s', l:icon, l:candidate))
-    endfor
-
-    return l:result
-  endfunction
-
-  function! s:edit_file(lines)
-    if len(a:lines) < 2 | return | endif
-
-    let l:cmd = get({'ctrl-x': 'split',
-                 \ 'ctrl-v': 'vertical split',
-                 \ 'ctrl-t': 'tabe'}, a:lines[0], 'e')
-
-    for l:item in a:lines[1:]
-      let l:pos = stridx(l:item, ' ')
-      let l:file_path = l:item[pos+1:-1]
-      execute 'silent '. l:cmd . ' ' . l:file_path
-    endfor
-  endfunction
-
-  call fzf#run({
-        \ 'source': <sid>files(a:qargs),
-        \ 'sink*':   function('s:edit_file'),
-        \ 'options': '-m ' . l:fzf_files_options,
-        \ 'down':    '40%' })
-endfunction
 
