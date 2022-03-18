@@ -34,7 +34,7 @@ call plug#begin(expand('~/.vim/plugged'))
 "*****************************************************************************
 "" Plug install packages
 "*****************************************************************************
-Plug 'junegunn/fzf', {'dir': '~/.fzf','do': './install --all'}
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'neovim/nvim-lspconfig'
 Plug 'hrsh7th/nvim-cmp'
 Plug 'hrsh7th/cmp-nvim-lsp'
@@ -58,6 +58,7 @@ Plug 'tpope/vim-fugitive'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'airblade/vim-gitgutter'
+Plug 'rafamadriz/friendly-snippets'
 Plug 'vim-scripts/CSApprox'
 Plug 'Raimondi/delimitMate'
 Plug 'majutsushi/tagbar'
@@ -66,6 +67,7 @@ Plug 'avelino/vim-bootstrap-updater'
 Plug 'sheerun/vim-polyglot'
 Plug 'simrat39/rust-tools.nvim'
 Plug 'hrsh7th/vim-vsnip'
+Plug 'hrsh7th/cmp-vsnip'
 Plug 'hrsh7th/cmp-path'
 Plug 'hrsh7th/cmp-buffer'
 Plug 'nvim-lua/plenary.nvim'
@@ -365,14 +367,14 @@ noremap <Leader>h :<C-u>split<CR>
 noremap <Leader>v :<C-u>vsplit<CR>
 
 "" Git
-noremap <Leader>ga :Gwrite<CR>
-noremap <Leader>gc :Gcommit<CR>
-noremap <Leader>gsh :Gpush<CR>
-noremap <Leader>gll :Gpull<CR>
-noremap <Leader>gs :Gstatus<CR>
-noremap <Leader>gb :Gblame<CR>
-noremap <Leader>gd :Gvdiff<CR>
-noremap <Leader>gr :Gremove<CR>
+noremap <Leader>ga :Git write<CR>
+noremap <Leader>gc :Git commit<CR>
+noremap <Leader>gsh :Git push<CR>
+noremap <Leader>gll :Git pull<CR>
+noremap <Leader>gs :Git status<CR>
+noremap <Leader>gb :Git blame<CR>
+noremap <Leader>gd :Git vdiff<CR>
+noremap <Leader>gr :Git remove<CR>
 
 " session management
 nnoremap <leader>so :OpenSession<Space>
@@ -389,22 +391,6 @@ nnoremap <silent> <S-t> :tabnew<CR>
 nnoremap <leader>. :lcd %:p:h<CR>
 
 "" fzf.vim
-set wildmode=list:longest,list:full
-set wildignore+=*.o,*.obj,.git,*.rbc,*.pyc,__pycache__
-let $FZF_DEFAULT_COMMAND =  "find * -path '*/\.*' -prune -o -path 'node_modules/**' -prune -o -path 'target/**' -prune -o -path 'dist/**' -prune -o  -type f -print -o -type l -print 2> /dev/null"
-
-" The Silver Searcher
-if executable('ag')
-  let $FZF_DEFAULT_COMMAND = 'ag --hidden --ignore .git -g ""'
-  set grepprg=ag\ --nogroup\ --nocolor
-endif
-
-" ripgrep
-if executable('rg')
-  let $FZF_DEFAULT_COMMAND = 'rg --files --hidden --follow --glob "!.git/*"'
-  set grepprg=rg\ --vimgrep
-  command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --hidden --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>).'| tr -d "\017"', 1, <bang>0)
-endif
 
 " Tagbar
 " noremap <silent> <leader>tt :TagbarToggle<CR>
@@ -477,7 +463,7 @@ set shortmess+=c
 " set swap time to pretty short so we have a shorter hover time -- also changes
 " swap
 " https://www.reddit.com/r/neovim/comments/mn7coe/lsp_autoshow_diagnostics_on_hover_in_popup_window/
-set updatetime=300
+set updatetime=2000
 
 " Configure LSP through rust-tools.nvim plugin.
 " rust-tools will configure and enable certain LSP features for us.
@@ -491,6 +477,55 @@ vim.api.nvim_set_keymap('n', 'gm', '<cmd>lua vim.lsp.buf.implementation()<CR>', 
 vim.api.nvim_set_keymap('n', 'gy', '<cmd>lua vim.lsp.buf.typeDefinition()<CR>', {noremap = true})
 vim.api.nvim_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', {noremap = true})
 vim.api.nvim_set_keymap('n', 'gn', '<cmd>lua vim.lsp.buf.rename()<CR>', {noremap = true})
+
+-- Copied from rust-tools
+local lspconfig_utils = require("lspconfig.util")
+local function get_root_dir(filename)
+    local fname = filename or vim.api.nvim_buf_get_name(0)
+    local cargo_crate_dir = lspconfig_utils.root_pattern("Cargo.toml")(fname)
+    local cmd = { "cargo", "metadata", "--no-deps", "--format-version", "1" }
+    if cargo_crate_dir ~= nil then
+		cmd[#cmd + 1] = "--manifest-path"
+		cmd[#cmd + 1] = lspconfig_utils.path.join(cargo_crate_dir, "Cargo.toml")
+	end
+	local cargo_metadata = ""
+	local cm = vim.fn.jobstart(cmd, {
+		on_stdout = function(_, d, _)
+			cargo_metadata = table.concat(d, "\n")
+		end,
+		stdout_buffered = true,
+	})
+	if cm > 0 then
+		cm = vim.fn.jobwait({ cm })[1]
+	else
+		cm = -1
+	end
+	local cargo_workspace_dir = nil
+	if cm == 0 then
+		cargo_workspace_dir = vim.fn.json_decode(cargo_metadata)["workspace_root"]
+	end
+	return cargo_workspace_dir
+		or cargo_crate_dir
+		or lspconfig_utils.root_pattern("rust-project.json")(fname)
+		or lspconfig_utils.find_git_ancestor(fname)
+end
+
+-- hopefully this doesn't return a trailing slash
+local temp_ra_target_dir = get_root_dir()
+-- find the directory name / end of path
+if temp_ra_target_dir ~= nil then
+    while(string.find(temp_ra_target_dir, "/") ~= nil)
+    do
+        idx = string.find(temp_ra_target_dir, "/")
+        temp_ra_target_dir = string.sub(temp_ra_target_dir, idx+1)
+    end
+    -- given /home/whoever/project this should return project
+
+    if temp_ra_target_dir == nil then
+        temp_ra_target_dir = "rust-analyzer-check"
+    end
+    temp_ra_target_dir = "/tmp/" .. temp_ra_target_dir
+end
 
 local nvim_lsp = require'lspconfig'
 
@@ -566,7 +601,7 @@ local opts = {
         -- on_attach = on_attach,
         cmd = { 'rust-analyzer' },
         cmd_env = {
-            RA_LOG = 'rust_analyzer=error'
+            RA_LOG = 'rust_analyzer=0'
         },
         settings = {
             -- to enable rust-analyzer settings visit:
@@ -574,12 +609,17 @@ local opts = {
             ["rust-analyzer"] = {
                 -- enable clippy on save
                 checkOnSave = {
-                    command = "clippy"
+                    command = "clippy",
+                    extraArgs = {"--target-dir", temp_ra_target_dir},
                 },
             }
         }
     },
 }
+-- print("--target-dir " .. temp_ra_target_dir)
+
+nvim_lsp.ccls.setup{}
+nvim_lsp.gopls.setup{}
 
 -- puts diagnostics in a hover window!!
 vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
@@ -593,15 +633,22 @@ vim.cmd [[autocmd CursorHold * lua vim.lsp.diagnostic.show_line_diagnostics()]]
 vim.cmd [[autocmd CursorHoldI * silent! lua vim.lsp.buf.signature_help()]]
 
 require('rust-tools').setup(opts)
-EOF
 
-
-" Setup Completion
-" See https://github.com/hrsh7th/nvim-cmp#basic-configuration
-lua <<EOF
+ -- Setup Completion
+ -- See https://github.com/hrsh7th/nvim-cmp#basic-configuration
 local cmp = require'cmp'
 cmp.setup({
+
   -- Enable LSP snippets
+  snippet = {
+    -- REQUIRED - you must specify a snippet engine
+    expand = function(args)
+      vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+      -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
+      -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
+      -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+    end,
+  },
   mapping = {
     ['<C-p>'] = cmp.mapping.select_prev_item(),
     ['<C-n>'] = cmp.mapping.select_next_item(),
@@ -621,6 +668,10 @@ cmp.setup({
   -- Installed sources
   sources = {
     { name = 'nvim_lsp' },
+    { name = 'vsnip' }, -- For vsnip users.
+    -- { name = 'luasnip' }, -- For luasnip users.
+    -- { name = 'ultisnips' }, -- For ultisnips users.
+    -- { name = 'snippy' }, -- For snippy users.
     { name = 'path' },
     { name = 'buffer' },
   },
