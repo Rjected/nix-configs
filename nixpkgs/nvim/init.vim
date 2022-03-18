@@ -47,7 +47,6 @@ Plug 'AlessandroYorba/alduin'
 Plug 'AlessandroYorba/sierra'
 Plug 'xolox/vim-misc'
 Plug 'xolox/vim-session'
-Plug 'fatih/vim-go'
 Plug 'ryanoasis/vim-devicons'
 Plug 'ntpeters/vim-better-whitespace'
 Plug 'scrooloose/nerdtree'
@@ -618,8 +617,22 @@ local opts = {
 }
 -- print("--target-dir " .. temp_ra_target_dir)
 
-nvim_lsp.ccls.setup{}
-nvim_lsp.gopls.setup{}
+local border = {
+    {"╭", "FloatBorder"}, {"─", "FloatBorder"},
+    {"╮", "FloatBorder"}, {"│", "FloatBorder"},
+    {"╯", "FloatBorder"}, {"─", "FloatBorder"},
+    {"╰", "FloatBorder"}, {"│", "FloatBorder"}
+}
+
+-- fun borders for documentation and signature help
+local handlers =  {
+  ["textDocument/hover"] =  vim.lsp.with(vim.lsp.handlers.hover, {border = border}),
+  ["textDocument/signatureHelp"] =  vim.lsp.with(vim.lsp.handlers.signature_help, {border = border }),
+}
+
+nvim_lsp.ccls.setup{handlers = handlers}
+nvim_lsp.gopls.setup{handlers = handlers}
+nvim_lsp.solc.setup{handlers = handlers}
 
 -- puts diagnostics in a hover window!!
 vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
