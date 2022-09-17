@@ -12,7 +12,6 @@ endif
 
 let vimplug_exists=expand('~/.vim/autoload/plug.vim')
 
-let g:vim_bootstrap_langs = "go"
 let g:vim_bootstrap_editor = "nvim"				" nvim or vim
 
 if !filereadable(vimplug_exists)
@@ -201,7 +200,7 @@ else
 
   " IndentLine - the magic line when you indent something
   let g:indentLine_enabled = 1
-  let g:indentLine_concealcursor = 0
+  " let g:indentLine_concealcursor = 0
   let g:indentLine_char = '┆'
   let g:indentLine_faster = 1
 
@@ -542,7 +541,6 @@ local opts = {
     tools = { -- rust-tools options
         procMacro = true,
         autoSetHints = true,
-        hover_with_actions = true,
         runnables = {
             -- whether to use telescope for selection menu or not
             use_telescope = true
