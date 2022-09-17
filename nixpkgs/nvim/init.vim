@@ -45,6 +45,9 @@ Plug 'lervag/vimtex'
 Plug 'honza/vim-snippets'
 Plug 'AlessandroYorba/alduin'
 Plug 'AlessandroYorba/sierra'
+Plug 'sainnhe/everforest'
+Plug 'projekt0n/github-nvim-theme'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'xolox/vim-misc'
 Plug 'xolox/vim-session'
 Plug 'ryanoasis/vim-devicons'
@@ -69,6 +72,7 @@ Plug 'hrsh7th/vim-vsnip'
 Plug 'hrsh7th/cmp-vsnip'
 Plug 'hrsh7th/cmp-path'
 Plug 'hrsh7th/cmp-buffer'
+Plug 'github/copilot.vim'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
 let g:make = 'gmake'
@@ -173,10 +177,14 @@ set ruler
 set number relativenumber
 set nu rnu
 
+" set light mode
+set background=dark
+
 let no_buffers_menu=1
-if !exists('g:not_finish_vimplug')
-  colorscheme sierra
-endif
+" see lua config
+" if !exists('g:not_finish_vimplug')
+"   colorscheme alduin
+" endif
 
 set mousemodel=popup
 set t_Co=256
@@ -196,18 +204,6 @@ else
   let g:indentLine_concealcursor = 0
   let g:indentLine_char = '┆'
   let g:indentLine_faster = 1
-
-
-  if $COLORTERM == 'gnome-terminal'
-    set term=gnome-256color
-  else
-    if $TERM == 'xterm'
-      set term=xterm-256color
-    endif
-    if $TERM == "alacritty"
-      let term=xterm-256color
-    endif
-  endif
 
 endif
 
@@ -291,9 +287,18 @@ if !exists('*s:setupWrapping')
     set wrap
     set wm=2
     set tw=80
-    set colorcolumn=81
+    " not friends with colorcolumn any more
+    " set colorcolumn=81
   endfunction
 endif
+
+"*****************************************************************************
+"" Autocmd Rules
+"*****************************************************************************
+
+imap <silent><script><expr> <C-j> copilot#Accept("")
+let g:copilot_no_tab_map = v:true
+let g:copilot_assume_mapped = v:true
 
 "*****************************************************************************
 "" Autocmd Rules
@@ -470,6 +475,11 @@ set updatetime=2000
 lua <<EOF
 require("trouble").setup {}
 
+-- configure github theme
+require('github-theme').setup({
+  theme_style = "dark_default",
+})
+
 vim.api.nvim_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', {noremap = true})
 vim.api.nvim_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', {noremap = true})
 vim.api.nvim_set_keymap('n', 'gm', '<cmd>lua vim.lsp.buf.implementation()<CR>', {noremap = true})
@@ -530,6 +540,7 @@ local nvim_lsp = require'lspconfig'
 
 local opts = {
     tools = { -- rust-tools options
+        procMacro = true,
         autoSetHints = true,
         hover_with_actions = true,
         runnables = {
@@ -609,6 +620,7 @@ local opts = {
                 -- enable clippy on save
                 checkOnSave = {
                     command = "clippy",
+                    allTargets = true,
                     extraArgs = {"--target-dir", temp_ra_target_dir},
                 },
             }
@@ -632,7 +644,7 @@ local handlers =  {
 
 nvim_lsp.ccls.setup{handlers = handlers}
 nvim_lsp.gopls.setup{handlers = handlers}
-nvim_lsp.solc.setup{handlers = handlers}
+-- nvim_lsp.solc.setup{handlers = handlers}
 
 -- puts diagnostics in a hover window!!
 vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
@@ -642,7 +654,7 @@ vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
     signs = true,
   }
 )
-vim.cmd [[autocmd CursorHold * lua vim.lsp.diagnostic.show_line_diagnostics()]]
+vim.cmd [[autocmd CursorHold * lua vim.diagnostic.open_float()]]
 vim.cmd [[autocmd CursorHoldI * silent! lua vim.lsp.buf.signature_help()]]
 
 require('rust-tools').setup(opts)
@@ -704,6 +716,9 @@ endif
 if !exists('g:airline_symbols')
   let g:airline_symbols = {}
 endif
+
+" set airline light theme
+let g:airline_theme='google_dark'
 
 let g:airline#extensions#branch#enabled = 1
 let g:airline#extensions#tabline#enabled = 1
