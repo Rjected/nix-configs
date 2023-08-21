@@ -41,7 +41,9 @@ Plug 'chrisbra/Colorizer'
 Plug 'hwayne/tla.vim'
 Plug 'rust-lang/rust.vim'
 Plug 'lervag/vimtex'
-Plug 'honza/vim-snippets'
+Plug 'edluffy/hologram.nvim'
+Plug 'MunifTanjim/nui.nvim'
+
 Plug 'AlessandroYorba/alduin'
 Plug 'AlessandroYorba/sierra'
 Plug 'sainnhe/everforest'
@@ -56,24 +58,31 @@ Plug 'kyazdani42/nvim-web-devicons'
 Plug 'folke/trouble.nvim'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
+Plug 'ruanyl/vim-gh-line'
+Plug 'tpope/vim-surround'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'airblade/vim-gitgutter'
-Plug 'rafamadriz/friendly-snippets'
+Plug 'ggandor/leap.nvim'
 Plug 'vim-scripts/CSApprox'
 Plug 'Raimondi/delimitMate'
-Plug 'majutsushi/tagbar'
 Plug 'Yggdroot/indentLine'
 Plug 'avelino/vim-bootstrap-updater'
 Plug 'sheerun/vim-polyglot'
 Plug 'simrat39/rust-tools.nvim'
+Plug 'SirVer/ultisnips'
+Plug 'honza/vim-snippets'
+Plug 'quangnguyen30192/cmp-nvim-ultisnips'
 Plug 'hrsh7th/vim-vsnip'
 Plug 'hrsh7th/cmp-vsnip'
 Plug 'hrsh7th/cmp-path'
 Plug 'hrsh7th/cmp-buffer'
 Plug 'github/copilot.vim'
-Plug 'nvim-lua/plenary.nvim'
+Plug 'sindrets/diffview.nvim'
+Plug 'pwntester/octo.nvim'
+Plug 'edjeffreys/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
+Plug 'nvim-telescope/telescope-file-browser.nvim'
 let g:make = 'gmake'
 if exists('make')
         let g:make = 'make'
@@ -287,7 +296,7 @@ if !exists('*s:setupWrapping')
     set wm=2
     set tw=80
     " not friends with colorcolumn any more
-    " set colorcolumn=81
+    set colorcolumn=0
   endfunction
 endif
 
@@ -328,14 +337,14 @@ augroup END
 "" Set up column width for certain file types
 augroup filetypedetect
   "" Programming Languages
-  autocmd Filetype cpp setlocal tw=80 colorcolumn=81
-  autocmd Filetype c setlocal tw=80 colorcolumn=81
-  autocmd Filetype go setlocal tw=80 colorcolumn=81
+  autocmd Filetype cpp setlocal tw=80
+  autocmd Filetype c setlocal tw=80
+  autocmd Filetype go setlocal tw=80
 
   "" Text
-  autocmd Filetype tex setlocal spell tw=80 colorcolumn=81
-  autocmd Filetype text setlocal spell tw=72 colorcolumn=73
-  autocmd Filetype markdown setlocal spell tw=0 colorcolumn=73
+  autocmd Filetype tex setlocal spell tw=80
+  autocmd Filetype text setlocal spell tw=72
+  autocmd Filetype markdown setlocal spell tw=0
 augroup end
 
 set autoread
@@ -418,6 +427,7 @@ if has('macunix')
   " pbcopy for OSX copy/paste
   vmap <C-x> :!pbcopy<CR>
   vmap <C-c> :w !pbcopy<CR><CR>
+
 endif
 
 "" Buffer nav
@@ -472,19 +482,58 @@ set updatetime=2000
 " rust-tools will configure and enable certain LSP features for us.
 " See https://github.com/simrat39/rust-tools.nvim#configuration
 lua <<EOF
+vim.g.vim_markdown_conceal = 0
+vim.g.vim_markdown_conceal_code_blocks = 0
+
 require("trouble").setup {}
 
--- configure github theme
+-- Or with configuration
 require('github-theme').setup({
-  theme_style = "dark_default",
+  -- ...
 })
 
+vim.cmd('colorscheme github_dark')
+
+-- -- Example config in Lua
+-- require("github-theme").setup({
+--   theme_style = "dark",
+--   function_style = "italic",
+--   sidebars = {"qf", "vista_kind", "terminal", "packer"},
+--
+--   -- Change the "hint" color to the "orange" color, and make the "error" color bright red
+--   colors = {hint = "orange", error = "#ff0000"},
+--
+--   -- Overwrite the highlight groups
+--   overrides = function(c)
+--     return {
+--       htmlTag = {fg = c.red, bg = "#282c34", sp = c.hint, style = "underline"},
+--       DiagnosticHint = {link = "LspDiagnosticsDefaultHint"},
+--       -- this will remove the highlight groups
+--       TSField = {},
+--     }
+--   end
+-- })
+
 vim.api.nvim_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', {noremap = true})
 vim.api.nvim_set_keymap('n', 'gm', '<cmd>lua vim.lsp.buf.implementation()<CR>', {noremap = true})
 vim.api.nvim_set_keymap('n', 'gy', '<cmd>lua vim.lsp.buf.typeDefinition()<CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', {noremap = true})
 vim.api.nvim_set_keymap('n', 'gn', '<cmd>lua vim.lsp.buf.rename()<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', {noremap = true})
+
+-- use telescope for references
+vim.api.nvim_set_keymap('n', 'gr', '<cmd>Telescope lsp_references<CR>', {noremap = true})
+
+-- from/for telescope-file-browser
+-- if I wanted to configure telescope-file-browser it would go here
+require("telescope").load_extension "file_browser"
+vim.api.nvim_set_keymap(
+  "n",
+  "<leader>fv",
+  ":Telescope file_browser<CR>",
+  { noremap = true }
+)
+
+require("octo").setup()
 
 -- Copied from rust-tools
 local lspconfig_utils = require("lspconfig.util")
@@ -538,6 +587,10 @@ end
 local nvim_lsp = require'lspconfig'
 
 local opts = {
+    -- how to execute terminal commands
+    -- options right now: termopen / quickfix
+    executor = require("rust-tools.executors").termopen,
+
     tools = { -- rust-tools options
         procMacro = true,
         autoSetHints = true,
@@ -586,6 +639,7 @@ local opts = {
             -- The color of the hints
             highlight = "Comment",
         },
+
         hover_actions = {
             -- the border that is used for the hover window
             -- see vim.api.nvim_open_win()
@@ -621,10 +675,99 @@ local opts = {
                     allTargets = true,
                     extraArgs = {"--target-dir", temp_ra_target_dir},
                 },
+                rustfmt = { extraArgs = { "+nightly" }, },
+                procMacro = {
+                    enable = true,
+                },
             }
         }
     },
+    -- debugging stuff
+    dap = {
+        adapter = {
+            type = "executable",
+            command = "lldb-vscode",
+            name = "rt_lldb",
+        },
+    },
+    -- settings for showing the crate graph based on graphviz and the dot
+    -- command
+    crate_graph = {
+        -- Backend used for displaying the graph
+        -- see: https://graphviz.org/docs/outputs/
+        -- default: x11
+        backend = "svg",
+        -- where to store the output, nil for no output stored (relative
+        -- path from pwd)
+        -- default: nil
+        output = nil,
+        -- true for all crates.io and external crates, false only the local
+        -- crates
+        -- default: true
+        full = true,
+
+        -- List of backends found on: https://graphviz.org/docs/outputs/
+        -- Is used for input validation and autocompletion
+        -- Last updated: 2021-08-26
+        enabled_graphviz_backends = {
+            "bmp",
+            "cgimage",
+            "canon",
+            "dot",
+            "gv",
+            "xdot",
+            "xdot1.2",
+            "xdot1.4",
+            "eps",
+            "exr",
+            "fig",
+            "gd",
+            "gd2",
+            "gif",
+            "gtk",
+            "ico",
+            "cmap",
+            "ismap",
+            "imap",
+            "cmapx",
+            "imap_np",
+            "cmapx_np",
+            "jpg",
+            "jpeg",
+            "jpe",
+            "jp2",
+            "json",
+            "json0",
+            "dot_json",
+            "xdot_json",
+            "pdf",
+            "pic",
+            "pct",
+            "pict",
+            "plain",
+            "plain-ext",
+            "png",
+            "pov",
+            "ps",
+            "ps2",
+            "psd",
+            "sgi",
+            "svg",
+            "svgz",
+            "tga",
+            "tiff",
+            "tif",
+            "tk",
+            "vml",
+            "vmlz",
+            "wbmp",
+            "webp",
+            "xlib",
+            "x11",
+        },
+    },
 }
+
 -- print("--target-dir " .. temp_ra_target_dir)
 
 local border = {
@@ -656,6 +799,7 @@ vim.cmd [[autocmd CursorHold * lua vim.diagnostic.open_float()]]
 vim.cmd [[autocmd CursorHoldI * silent! lua vim.lsp.buf.signature_help()]]
 
 require('rust-tools').setup(opts)
+require('leap').add_default_mappings()
 
  -- Setup Completion
  -- See https://github.com/hrsh7th/nvim-cmp#basic-configuration
@@ -666,10 +810,10 @@ cmp.setup({
   snippet = {
     -- REQUIRED - you must specify a snippet engine
     expand = function(args)
-      vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+      -- vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
       -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
       -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
-      -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+      vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
     end,
   },
   mapping = {
@@ -693,12 +837,24 @@ cmp.setup({
     { name = 'nvim_lsp' },
     { name = 'vsnip' }, -- For vsnip users.
     -- { name = 'luasnip' }, -- For luasnip users.
-    -- { name = 'ultisnips' }, -- For ultisnips users.
+    { name = 'ultisnips' }, -- For ultisnips users.
     -- { name = 'snippy' }, -- For snippy users.
     { name = 'path' },
     { name = 'buffer' },
   },
 })
+
+require'nvim-treesitter.configs'.setup {
+  -- A list of parser names, or "all"
+  ensure_install = { "c", "lua", "rust" },
+
+  -- Install parsers synchronously (only applied to `ensure_installed`)
+  sync_install = false,
+
+  -- Automatically install missing parsers when entering buffer
+  auto_install = true,
+}
+
 EOF
 
 "" Include user's local vim config
@@ -715,7 +871,7 @@ if !exists('g:airline_symbols')
   let g:airline_symbols = {}
 endif
 
-" set airline light theme
+" set airline dark theme
 let g:airline_theme='google_dark'
 
 let g:airline#extensions#branch#enabled = 1
