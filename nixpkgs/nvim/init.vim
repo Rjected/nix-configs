@@ -49,6 +49,7 @@ Plug 'AlessandroYorba/sierra'
 Plug 'sainnhe/everforest'
 Plug 'projekt0n/github-nvim-theme'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'nvim-treesitter/nvim-treesitter-context'
 Plug 'xolox/vim-misc'
 Plug 'xolox/vim-session'
 Plug 'ryanoasis/vim-devicons'
@@ -70,11 +71,17 @@ Plug 'Yggdroot/indentLine'
 Plug 'avelino/vim-bootstrap-updater'
 Plug 'sheerun/vim-polyglot'
 Plug 'simrat39/rust-tools.nvim'
-Plug 'SirVer/ultisnips'
+Plug 'ray-x/lsp_signature.nvim'
+Plug 't-troebst/perfanno.nvim'
+Plug 'ray-x/guihua.lua', {'do': 'cd lua/fzy && make' }
+Plug 'ray-x/navigator.lua'
+
+" Snippets
+Plug 'L3MON4D3/LuaSnip', {'tag': 'v2.*', 'do': 'make install_jsregexp'} " Replace <CurrentMajor> by the latest released major (first number of latest release)
+Plug 'saadparwaiz1/cmp_luasnip'
+Plug 'molleweide/LuaSnip-snippets.nvim'
+Plug 'rafamadriz/friendly-snippets'
 Plug 'honza/vim-snippets'
-Plug 'quangnguyen30192/cmp-nvim-ultisnips'
-Plug 'hrsh7th/vim-vsnip'
-Plug 'hrsh7th/cmp-vsnip'
 Plug 'hrsh7th/cmp-path'
 Plug 'hrsh7th/cmp-buffer'
 Plug 'github/copilot.vim'
@@ -533,6 +540,20 @@ vim.api.nvim_set_keymap(
   { noremap = true }
 )
 
+local example_setup = {
+  on_attach = function(client, bufnr)
+    require "lsp_signature".on_attach({
+      bind = true, -- This is mandatory, otherwise border config won't get registered.
+      handler_opts = {
+        border = "rounded"
+      }
+    }, bufnr)
+  end,
+}
+
+require "lsp_signature".setup(example_setup)
+require "treesitter-context".setup()
+
 require("octo").setup()
 
 -- Copied from rust-tools
@@ -585,6 +606,23 @@ if temp_ra_target_dir ~= nil then
 end
 
 local nvim_lsp = require'lspconfig'
+
+local rust_analyzer_settings = {
+    -- to enable rust-analyzer settings visit:
+    -- https://github.com/rust-analyzer/rust-analyzer/blob/master/docs/user/generated_config.adoc
+    ["rust-analyzer"] = {
+        -- enable clippy on save
+        checkOnSave = {
+            command = "clippy",
+            allTargets = true,
+            extraArgs = {"--target-dir", temp_ra_target_dir},
+        },
+        rustfmt = { extraArgs = { "+nightly" }, },
+        procMacro = {
+            enable = true,
+        },
+    }
+}
 
 local opts = {
     -- how to execute terminal commands
@@ -665,22 +703,7 @@ local opts = {
         cmd_env = {
             RA_LOG = 'rust_analyzer=0'
         },
-        settings = {
-            -- to enable rust-analyzer settings visit:
-            -- https://github.com/rust-analyzer/rust-analyzer/blob/master/docs/user/generated_config.adoc
-            ["rust-analyzer"] = {
-                -- enable clippy on save
-                checkOnSave = {
-                    command = "clippy",
-                    allTargets = true,
-                    extraArgs = {"--target-dir", temp_ra_target_dir},
-                },
-                rustfmt = { extraArgs = { "+nightly" }, },
-                procMacro = {
-                    enable = true,
-                },
-            }
-        }
+        settings = rust_analyzer_settings,
     },
     -- debugging stuff
     dap = {
@@ -800,6 +823,17 @@ vim.cmd [[autocmd CursorHoldI * silent! lua vim.lsp.buf.signature_help()]]
 
 require('rust-tools').setup(opts)
 require('leap').add_default_mappings()
+require('perfanno').setup()
+
+-- Language snippet completion
+-- See https://github.com/molleweide/LuaSnip-snippets.nvim
+local luasnip = require("luasnip")
+
+-- be sure to load this first since it overwrites the snippets table.
+luasnip.snippets = require("luasnip_snippets").load_snippets()
+
+-- friendly-snippets
+require("luasnip.loaders.from_vscode").lazy_load()
 
  -- Setup Completion
  -- See https://github.com/hrsh7th/nvim-cmp#basic-configuration
@@ -811,9 +845,9 @@ cmp.setup({
     -- REQUIRED - you must specify a snippet engine
     expand = function(args)
       -- vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
-      -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
+      require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
       -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
-      vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+      -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
     end,
   },
   mapping = {
@@ -835,9 +869,9 @@ cmp.setup({
   -- Installed sources
   sources = {
     { name = 'nvim_lsp' },
-    { name = 'vsnip' }, -- For vsnip users.
-    -- { name = 'luasnip' }, -- For luasnip users.
-    { name = 'ultisnips' }, -- For ultisnips users.
+    -- { name = 'vsnip' }, -- For vsnip users.
+    { name = 'luasnip' }, -- For luasnip users.
+    -- { name = 'ultisnips' }, -- For ultisnips users.
     -- { name = 'snippy' }, -- For snippy users.
     { name = 'path' },
     { name = 'buffer' },
@@ -854,6 +888,15 @@ require'nvim-treesitter.configs'.setup {
   -- Automatically install missing parsers when entering buffer
   auto_install = true,
 }
+
+require('navigator').setup({
+  lsp = {
+    rust_analyzer = {
+      settings = rust_analyzer_settings,
+    }
+    -- format_on_save = false,
+  }
+})
 
 EOF
 
