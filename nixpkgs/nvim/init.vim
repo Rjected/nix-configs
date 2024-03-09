@@ -49,7 +49,6 @@ Plug 'AlessandroYorba/sierra'
 Plug 'sainnhe/everforest'
 Plug 'projekt0n/github-nvim-theme'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-Plug 'nvim-treesitter/nvim-treesitter-context'
 Plug 'xolox/vim-misc'
 Plug 'xolox/vim-session'
 Plug 'ryanoasis/vim-devicons'
@@ -70,11 +69,12 @@ Plug 'Raimondi/delimitMate'
 Plug 'Yggdroot/indentLine'
 Plug 'avelino/vim-bootstrap-updater'
 Plug 'sheerun/vim-polyglot'
-Plug 'simrat39/rust-tools.nvim'
+Plug 'mrcjkb/rustaceanvim'
 Plug 'ray-x/lsp_signature.nvim'
 Plug 't-troebst/perfanno.nvim'
 Plug 'ray-x/guihua.lua', {'do': 'cd lua/fzy && make' }
 Plug 'ray-x/navigator.lua'
+Plug 'p00f/godbolt.nvim'
 
 " Snippets
 Plug 'L3MON4D3/LuaSnip', {'tag': 'v2.*', 'do': 'make install_jsregexp'} " Replace <CurrentMajor> by the latest released major (first number of latest release)
@@ -392,7 +392,7 @@ noremap <Leader>gsh :Git push<CR>
 noremap <Leader>gll :Git pull<CR>
 noremap <Leader>gs :Git status<CR>
 noremap <Leader>gb :Git blame<CR>
-noremap <Leader>gd :Git vdiff<CR>
+noremap <Leader>gd :Git diff<CR>
 noremap <Leader>gr :Git remove<CR>
 
 " session management
@@ -444,7 +444,10 @@ noremap <leader>x :bn<CR>
 noremap <leader>w :bn<CR>
 
 "" Close buffer
-noremap <leader>c :bd<CR>
+" noremap <leader>c :bd<CR>
+
+"" Close buffer, without closing the window
+noremap <leader>c :b#<bar>bd#<CR>
 
 "" Clean search (highlight)
 nnoremap <silent> <leader><space> :noh<cr>
@@ -485,9 +488,6 @@ set shortmess+=c
 " https://www.reddit.com/r/neovim/comments/mn7coe/lsp_autoshow_diagnostics_on_hover_in_popup_window/
 set updatetime=2000
 
-" Configure LSP through rust-tools.nvim plugin.
-" rust-tools will configure and enable certain LSP features for us.
-" See https://github.com/simrat39/rust-tools.nvim#configuration
 lua <<EOF
 vim.g.vim_markdown_conceal = 0
 vim.g.vim_markdown_conceal_code_blocks = 0
@@ -552,7 +552,6 @@ local example_setup = {
 }
 
 require "lsp_signature".setup(example_setup)
-require "treesitter-context".setup()
 
 require("octo").setup()
 
@@ -627,7 +626,7 @@ local rust_analyzer_settings = {
 local opts = {
     -- how to execute terminal commands
     -- options right now: termopen / quickfix
-    executor = require("rust-tools.executors").termopen,
+    executor = require("rustaceanvim.executors").termopen,
 
     tools = { -- rust-tools options
         procMacro = true,
@@ -806,8 +805,13 @@ local handlers =  {
   ["textDocument/signatureHelp"] =  vim.lsp.with(vim.lsp.handlers.signature_help, {border = border }),
 }
 
-nvim_lsp.ccls.setup{handlers = handlers}
-nvim_lsp.gopls.setup{handlers = handlers}
+nvim_lsp.ccls.setup{
+  lsp = {
+    format_on_save = false,
+  },
+  handlers = handlers
+}
+-- nvim_lsp.gopls.setup{handlers = handlers}
 -- nvim_lsp.solc.setup{handlers = handlers}
 
 -- puts diagnostics in a hover window!!
@@ -821,7 +825,45 @@ vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
 vim.cmd [[autocmd CursorHold * lua vim.diagnostic.open_float()]]
 vim.cmd [[autocmd CursorHoldI * silent! lua vim.lsp.buf.signature_help()]]
 
-require('rust-tools').setup(opts)
+vim.g.rustaceanvim = opts
+
+local function enable_features(features)
+    local features = features.fargs
+
+    -- make sure the value is a string
+    if type(features) == "table" then
+        features = table.concat(features, ",")
+    end
+
+    if type(features) ~= "string" then
+        print("features must be a string or a table of strings")
+        return
+    end
+
+    local ra = require('rustaceanvim.config.server')
+    -- print current setitngs
+    local ra_settings = opts.server.settings["rust-analyzer"]
+    if ra_settings.cargo == nil then
+        ra_settings.cargo = { features = {} }
+    end
+    ra_settings.cargo.features = features
+    vim.g.rustaceanvim.server.settings["rust-analyzer"] = ra_settings
+    print(vim.inspect(vim.g.rustaceanvim))
+    print("stuff")
+    print(vim.inspect(vim.g.rustaceanvim.server.settings))
+end
+
+local function clear_features()
+    local ra = require('rustaceanvim.config.server')
+    local ra_settings = opts.server.settings["rust-analyzer"]
+    if ra_settings.cargo then
+        ra_settings.cargo.features = nil
+    end
+    vim.g.rustaceanvim.server.settings["rust-analyzer"] = ra_settings
+end
+vim.api.nvim_create_user_command("RustClearFeatures", clear_features, {})
+vim.api.nvim_create_user_command("RustEnableFeatures", enable_features, { nargs = 1 })
+
 require('leap').add_default_mappings()
 require('perfanno').setup()
 
@@ -896,6 +938,20 @@ require('navigator').setup({
     }
     -- format_on_save = false,
   }
+})
+
+require("godbolt").setup({
+    languages = {
+        cpp = { compiler = "g122", options = {} },
+        c = { compiler = "cg122", options = {} },
+        rust = { compiler = "r1650", options = {} },
+        -- any_additional_filetype = { compiler = ..., options = ... },
+    },
+    quickfix = {
+        enable = false, -- whether to populate the quickfix list in case of errors
+        auto_open = false -- whether to open the quickfix list in case of errors
+    },
+    url = "https://godbolt.org" -- can be changed to a different godbolt instance
 })
 
 EOF
