@@ -73,7 +73,6 @@ Plug 'mrcjkb/rustaceanvim'
 Plug 'ray-x/lsp_signature.nvim'
 Plug 't-troebst/perfanno.nvim'
 Plug 'ray-x/guihua.lua', {'do': 'cd lua/fzy && make' }
-Plug 'ray-x/navigator.lua'
 Plug 'p00f/godbolt.nvim'
 
 " Snippets
@@ -363,8 +362,7 @@ set autoread
 "" Telescope commands
 " Find files using Telescope command-line sugar.
 nnoremap <leader>ff <cmd>Telescope find_files<cr>
-nnoremap <leader>fg <cmd>Telescope live_grep<cr>
-nnoremap <leader>fb <cmd>Telescope buffers<cr>
+nnoremap <leader>fg <cmd>Telescope live_grep<cr> nnoremap <leader>fb <cmd>Telescope buffers<cr>
 nnoremap <leader>fh <cmd>Telescope help_tags<cr>
 
 " Using Lua functions
@@ -392,7 +390,7 @@ noremap <Leader>gsh :Git push<CR>
 noremap <Leader>gll :Git pull<CR>
 noremap <Leader>gs :Git status<CR>
 noremap <Leader>gb :Git blame<CR>
-noremap <Leader>gd :Git diff<CR>
+" noremap <Leader>gd :Git diff<CR>
 noremap <Leader>gr :Git remove<CR>
 
 " session management
@@ -588,21 +586,21 @@ local function get_root_dir(filename)
 end
 
 -- hopefully this doesn't return a trailing slash
-local temp_ra_target_dir = get_root_dir()
--- find the directory name / end of path
-if temp_ra_target_dir ~= nil then
-    while(string.find(temp_ra_target_dir, "/") ~= nil)
-    do
-        idx = string.find(temp_ra_target_dir, "/")
-        temp_ra_target_dir = string.sub(temp_ra_target_dir, idx+1)
-    end
-    -- given /home/whoever/project this should return project
-
-    if temp_ra_target_dir == nil then
-        temp_ra_target_dir = "rust-analyzer-check"
-    end
-    temp_ra_target_dir = "/tmp/" .. temp_ra_target_dir
-end
+-- local temp_ra_target_dir = get_root_dir()
+-- -- find the directory name / end of path
+-- if temp_ra_target_dir ~= nil then
+--     while(string.find(temp_ra_target_dir, "/") ~= nil)
+--     do
+--         idx = string.find(temp_ra_target_dir, "/")
+--         temp_ra_target_dir = string.sub(temp_ra_target_dir, idx+1)
+--     end
+--     -- given /home/whoever/project this should return project
+--
+--     if temp_ra_target_dir == nil then
+--         temp_ra_target_dir = "rust-analyzer-check"
+--     end
+--     temp_ra_target_dir = "/tmp/" .. temp_ra_target_dir
+-- end
 
 local nvim_lsp = require'lspconfig'
 
@@ -614,14 +612,24 @@ local rust_analyzer_settings = {
         checkOnSave = {
             command = "clippy",
             allTargets = true,
-            extraArgs = {"--target-dir", temp_ra_target_dir},
         },
         rustfmt = { extraArgs = { "+nightly" }, },
         procMacro = {
             enable = true,
         },
+        server = {
+            extraEnv = {
+                ["RUSTUP_TOOLCHAIN"] = "nightly",
+            },
+        },
     }
 }
+
+local function return_rust_analyzer_settings(features)
+    return rust_analyzer_settings
+end
+
+local cargo_features = nil
 
 local opts = {
     -- how to execute terminal commands
@@ -702,7 +710,10 @@ local opts = {
         cmd_env = {
             RA_LOG = 'rust_analyzer=0'
         },
-        settings = rust_analyzer_settings,
+        settings = function()
+            rust_analyzer_settings["rust-analyzer"].cargo = { features = cargo_features }
+            return rust_analyzer_settings
+        end,
     },
     -- debugging stuff
     dap = {
@@ -838,28 +849,20 @@ local function enable_features(features)
     if type(features) ~= "string" then
         print("features must be a string or a table of strings")
         return
+    else
+        -- make this a table with one element
+        features = { features }
     end
 
-    local ra = require('rustaceanvim.config.server')
-    -- print current setitngs
-    local ra_settings = opts.server.settings["rust-analyzer"]
-    if ra_settings.cargo == nil then
-        ra_settings.cargo = { features = {} }
-    end
-    ra_settings.cargo.features = features
-    vim.g.rustaceanvim.server.settings["rust-analyzer"] = ra_settings
-    print(vim.inspect(vim.g.rustaceanvim))
-    print("stuff")
-    print(vim.inspect(vim.g.rustaceanvim.server.settings))
+    -- set new features
+    cargo_features = features
+
+    -- restart rust-analyzer, do the equivalent of :RustAnalyzer restart
+    vim.api.nvim_command("RustAnalyzer restart")
 end
 
 local function clear_features()
-    local ra = require('rustaceanvim.config.server')
-    local ra_settings = opts.server.settings["rust-analyzer"]
-    if ra_settings.cargo then
-        ra_settings.cargo.features = nil
-    end
-    vim.g.rustaceanvim.server.settings["rust-analyzer"] = ra_settings
+    cargo_features = nil
 end
 vim.api.nvim_create_user_command("RustClearFeatures", clear_features, {})
 vim.api.nvim_create_user_command("RustEnableFeatures", enable_features, { nargs = 1 })
@@ -930,15 +933,6 @@ require'nvim-treesitter.configs'.setup {
   -- Automatically install missing parsers when entering buffer
   auto_install = true,
 }
-
-require('navigator').setup({
-  lsp = {
-    rust_analyzer = {
-      settings = rust_analyzer_settings,
-    }
-    -- format_on_save = false,
-  }
-})
 
 require("godbolt").setup({
     languages = {
