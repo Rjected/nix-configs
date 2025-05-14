@@ -35,6 +35,7 @@ call plug#begin(expand('~/.vim/plugged'))
 "*****************************************************************************
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'neovim/nvim-lspconfig'
+Plug 'nvim-lua/lsp-status.nvim'
 Plug 'hrsh7th/nvim-cmp'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'chrisbra/Colorizer'
@@ -43,11 +44,13 @@ Plug 'rust-lang/rust.vim'
 Plug 'lervag/vimtex'
 Plug 'edluffy/hologram.nvim'
 Plug 'MunifTanjim/nui.nvim'
-
+Plug 'shortcuts/no-neck-pain.nvim'
+Plug 'mg979/vim-visual-multi'
+Plug 'rebelot/kanagawa.nvim'
 Plug 'AlessandroYorba/alduin'
 Plug 'AlessandroYorba/sierra'
 Plug 'sainnhe/everforest'
-Plug 'projekt0n/github-nvim-theme'
+Plug 'tomasky/bookmarks.nvim'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'xolox/vim-misc'
 Plug 'xolox/vim-session'
@@ -69,24 +72,48 @@ Plug 'Raimondi/delimitMate'
 Plug 'Yggdroot/indentLine'
 Plug 'avelino/vim-bootstrap-updater'
 Plug 'sheerun/vim-polyglot'
-Plug 'mrcjkb/rustaceanvim'
+" Plug 'mrcjkb/rustaceanvim'
 Plug 'ray-x/lsp_signature.nvim'
 Plug 't-troebst/perfanno.nvim'
 Plug 'ray-x/guihua.lua', {'do': 'cd lua/fzy && make' }
 Plug 'p00f/godbolt.nvim'
+Plug 'ThePrimeagen/harpoon', { 'branch': 'harpoon2' }
+
+" colorscheme
+Plug 'tjdevries/colorbuddy.nvim'
+Plug 'jesseleite/nvim-noirbuddy'
+" Plug 'projekt0n/github-nvim-theme'
+
+" For russian comments
+Plug 'kraftwerk28/gtranslate.nvim'
+
+" AI
+" Plug 'supermaven-inc/supermaven-nvim'
+Plug 'onsails/lspkind.nvim'
+Plug 'github/copilot.vim'
+
+Plug 'yetone/avante.nvim', { 'branch': 'main', 'do': 'make' }
+
+" lean
+" Plug 'Julian/lean.nvim'
+Plug 'stevearc/dressing.nvim'
+Plug 'MunifTanjim/nui.nvim'
+Plug 'MeanderingProgrammer/render-markdown.nvim'
+Plug 'HakonHarnes/img-clip.nvim'
+Plug 'zbirenbaum/copilot.lua'
 
 " Snippets
 Plug 'L3MON4D3/LuaSnip', {'tag': 'v2.*', 'do': 'make install_jsregexp'} " Replace <CurrentMajor> by the latest released major (first number of latest release)
-Plug 'saadparwaiz1/cmp_luasnip'
+" Plug 'saadparwaiz1/cmp_luasnip'
 Plug 'molleweide/LuaSnip-snippets.nvim'
 Plug 'rafamadriz/friendly-snippets'
-Plug 'honza/vim-snippets'
-Plug 'hrsh7th/cmp-path'
-Plug 'hrsh7th/cmp-buffer'
-Plug 'github/copilot.vim'
+
+" Plug 'honza/vim-snippets'
+" Plug 'hrsh7th/cmp-path'
+" Plug 'hrsh7th/cmp-buffer'
 Plug 'sindrets/diffview.nvim'
 Plug 'pwntester/octo.nvim'
-Plug 'edjeffreys/plenary.nvim'
+Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-telescope/telescope-file-browser.nvim'
 let g:make = 'gmake'
@@ -137,9 +164,9 @@ filetype plugin indent on
 "" Basic Setup
 "*****************************************************************************"
 "" Encoding
-set encoding=utf-8
-set fileencoding=utf-8
-set fileencodings=utf-8
+" set encoding=utf-8
+" set fileencoding=utf-8
+" set fileencodings=utf-8
 set bomb
 set binary
 set ttyfast
@@ -225,8 +252,8 @@ endif
 if &term == "alacritty"
   let &term = "xterm-256color"
 endif
-let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
-let &t_8b = "\<Esc>[48:2;%lu;%lu;%lum"
+" let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+" let &t_8b = "\<Esc>[48:2;%lu;%lu;%lum"
 
 if &term =~ '256color'
   set t_ut=
@@ -362,22 +389,23 @@ set autoread
 "" Telescope commands
 " Find files using Telescope command-line sugar.
 nnoremap <leader>ff <cmd>Telescope find_files<cr>
-nnoremap <leader>fg <cmd>Telescope live_grep<cr> nnoremap <leader>fb <cmd>Telescope buffers<cr>
+nnoremap <leader>fk <cmd>Telescope keymaps<cr>
+nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+nnoremap <leader>fb <cmd>Telescope bookmarks list<cr>
 nnoremap <leader>fh <cmd>Telescope help_tags<cr>
+nnoremap <leader>fd <cmd>Telescope lsp_document_symbols<cr>
+nnoremap <leader>fe <cmd>Telescope diagnostics<cr>
 
 " Using Lua functions
-nnoremap <leader>ff <cmd>lua require('telescope.builtin').find_files()<cr>
-nnoremap <leader>fg <cmd>lua require('telescope.builtin').live_grep()<cr>
-nnoremap <leader>fb <cmd>lua require('telescope.builtin').buffers()<cr>
-nnoremap <leader>fh <cmd>lua require('telescope.builtin').help_tags()<cr>
+" nnoremap <leader>ff <cmd>lua require('telescope.builtin').find_files()<cr>
+" nnoremap <leader>fg <cmd>lua require('telescope.builtin').live_grep()<cr>
+" nnoremap <leader>fb <cmd>lua require('telescope.builtin').buffers()<cr>
+" nnoremap <leader>fh <cmd>lua require('telescope.builtin').help_tags()<cr>
 
 "" Vimtex commands
 noremap <Leader>tc :VimtexTocToggle<CR>
 noremap <Leader>tv :VimtexTocOpen<CR>
 noremap <Leader>lc :VimtexView<CR>
-
-"" NERDTree focus keybind
-noremap <leader>y :NERDTreeFocus<CR>
 
 "" Split
 noremap <Leader>h :<C-u>split<CR>
@@ -400,13 +428,14 @@ nnoremap <leader>sd :DeleteSession<CR>
 nnoremap <leader>sc :CloseSession<CR>
 
 "" Tabs
-nnoremap <Tab> gt
-nnoremap <S-Tab> gT
-nnoremap <silent> <S-t> :tabnew<CR>
+" nnoremap <Tab> gt
+" nnoremap <S-Tab> gT
+" nnoremap <silent> <S-t> :tabnew<CR>
 
 "" Set working directory
 nnoremap <leader>. :lcd %:p:h<CR>
 
+let g:gh_trace = 1
 "" fzf.vim
 
 " Tagbar
@@ -491,13 +520,37 @@ vim.g.vim_markdown_conceal = 0
 vim.g.vim_markdown_conceal_code_blocks = 0
 
 require("trouble").setup {}
+-- Lua
+vim.keymap.set("n", "<leader>xx", function() require("trouble").toggle() end)
+vim.keymap.set("n", "<leader>xw", function() require("trouble").toggle("workspace_diagnostics") end)
+vim.keymap.set("n", "<leader>xd", function() require("trouble").toggle("document_diagnostics") end)
+vim.keymap.set("n", "<leader>xq", function() require("trouble").toggle("quickfix") end)
+vim.keymap.set("n", "<leader>xl", function() require("trouble").toggle("loclist") end)
+
+require('avante_lib').load()
+local avante_opts = {
+  provider = "gemini",
+  gemini = {
+    endpoint = "https://generativelanguage.googleapis.com/v1beta/models",
+    model = "gemini-2.5-pro-preview-03-25",
+    timeout = 30000,
+    temperature = 0,
+    max_tokens = 1048576,
+  },
+}
+
+require('avante').setup(avante_opts)
+
+-- colorscheme setup
+-- require("noirbuddy").setup()
+vim.cmd('colorscheme kanagawa')
 
 -- Or with configuration
-require('github-theme').setup({
-  -- ...
-})
+-- require('github-theme').setup({
+--   -- ...
+-- })
 
-vim.cmd('colorscheme github_dark')
+-- vim.cmd('colorscheme github_dark')
 
 -- -- Example config in Lua
 -- require("github-theme").setup({
@@ -520,12 +573,12 @@ vim.cmd('colorscheme github_dark')
 -- })
 
 vim.api.nvim_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', 'gm', '<cmd>lua vim.lsp.buf.implementation()<CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', 'gy', '<cmd>lua vim.lsp.buf.typeDefinition()<CR>', {noremap = true})
 vim.api.nvim_set_keymap('n', 'gn', '<cmd>lua vim.lsp.buf.rename()<CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', {noremap = true})
 
--- use telescope for references
+-- use telescope for references, implementations, definitions, type definitions
+vim.api.nvim_set_keymap('n', 'gd', '<cmd>Telescope lsp_definitions<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', 'gy', '<cmd>Telescope lsp_type_definitions<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', 'gi', '<cmd>Telescope lsp_implementations<CR>', {noremap = true})
 vim.api.nvim_set_keymap('n', 'gr', '<cmd>Telescope lsp_references<CR>', {noremap = true})
 
 -- from/for telescope-file-browser
@@ -550,6 +603,16 @@ local example_setup = {
 }
 
 require "lsp_signature".setup(example_setup)
+
+-- require("supermaven-nvim").setup({
+--   keymaps = {
+--     accept_suggestion = "<C-l>",
+--     clear_suggestion = "<C-]>",
+--     accept_word = "<C-j>",
+--   },
+--   disable_inline_completion = true, -- disables inline completion for use with cmp
+--   disable_keymaps = false -- disables built in keymaps for more manual control
+-- })
 
 require("octo").setup()
 
@@ -602,39 +665,70 @@ end
 --     temp_ra_target_dir = "/tmp/" .. temp_ra_target_dir
 -- end
 
-local nvim_lsp = require'lspconfig'
-
-local rust_analyzer_settings = {
-    -- to enable rust-analyzer settings visit:
-    -- https://github.com/rust-analyzer/rust-analyzer/blob/master/docs/user/generated_config.adoc
-    ["rust-analyzer"] = {
-        -- enable clippy on save
-        checkOnSave = {
-            command = "clippy",
-            allTargets = true,
-        },
-        rustfmt = { extraArgs = { "+nightly" }, },
-        procMacro = {
-            enable = true,
-        },
-        server = {
-            extraEnv = {
-                ["RUSTUP_TOOLCHAIN"] = "nightly",
-            },
-        },
-    }
+-- bookmarks
+require('bookmarks').setup {
+  -- sign_priority = 8,  --set bookmark sign priority to cover other sign
+  save_file = vim.fn.expand "$HOME/.bookmarks", -- bookmarks save file path
+  keywords =  {
+    ["@t"] = "☑️ ", -- mark annotation startswith @t ,signs this icon as `Todo`
+    ["@w"] = "⚠️ ", -- mark annotation startswith @w ,signs this icon as `Warn`
+    ["@f"] = "⛏ ", -- mark annotation startswith @f ,signs this icon as `Fix`
+    ["@n"] = " ", -- mark annotation startswith @n ,signs this icon as `Note`
+  },
+  on_attach = function(bufnr)
+    local bm = require "bookmarks"
+    local map = vim.keymap.set
+    map("n","mm",bm.bookmark_toggle) -- add or remove bookmark at current line
+    map("n","mi",bm.bookmark_ann) -- add or edit mark annotation at current line
+    map("n","mc",bm.bookmark_clean) -- clean all marks in local buffer
+    map("n","mn",bm.bookmark_next) -- jump to next mark in local buffer
+    map("n","mp",bm.bookmark_prev) -- jump to previous mark in local buffer
+    map("n","ml",bm.bookmark_list) -- show marked file list in quickfix window
+    map("n","mx",bm.bookmark_clear_all) -- removes all bookmarks
+  end
 }
 
-local function return_rust_analyzer_settings(features)
-    return rust_analyzer_settings
-end
+local nvim_lsp = require'lspconfig'
 
 local cargo_features = nil
 
+-- gets rid of server cancelled the request logs
+for _, method in ipairs({ 'textDocument/diagnostic', 'workspace/diagnostic' }) do
+    local default_diagnostic_handler = vim.lsp.handlers[method]
+    vim.lsp.handlers[method] = function(err, result, context, config)
+        if err ~= nil and err.code == -32802 then
+            return
+        end
+        return default_diagnostic_handler(err, result, context, config)
+    end
+end
+
 local opts = {
+    cmd = { "/home/dan/.rustup/toolchains/nightly-aarch64-apple-darwin/bin/rust-analyzer" },
     -- how to execute terminal commands
     -- options right now: termopen / quickfix
-    executor = require("rustaceanvim.executors").termopen,
+    server = {
+        default_settings = {
+            -- rust-analyzer language server configuration
+            ['rust-analyzer'] = {
+                extraEnv = {
+                    ["RA_LOG"] = "debug",
+                    ["RUSTUP_TOOLCHAIN"] = "nightly",
+                },
+                check = {
+                    command = "clippy",
+                },
+            },
+        },
+        ra_multiplex = { enable = false, },
+        capabilities = {
+            workspace = {
+                didChangeWatchedFiles = {
+                    dynamicRegistration = true
+                }
+            }
+        }
+    },
 
     tools = { -- rust-tools options
         procMacro = true,
@@ -684,119 +778,14 @@ local opts = {
             -- The color of the hints
             highlight = "Comment",
         },
-
-        hover_actions = {
-            -- the border that is used for the hover window
-            -- see vim.api.nvim_open_win()
-            border = {
-                {"╭", "FloatBorder"}, {"─", "FloatBorder"},
-                {"╮", "FloatBorder"}, {"│", "FloatBorder"},
-                {"╯", "FloatBorder"}, {"─", "FloatBorder"},
-                {"╰", "FloatBorder"}, {"│", "FloatBorder"}
-            },
-
-            -- whether the hover action window gets automatically focused
-            auto_focus = false
-        },
     },
 
-    -- all the opts to send to nvim-lspconfig
-    -- these override the defaults set by rust-tools.nvim
-    -- see https://github.com/neovim/nvim-lspconfig/blob/master/CONFIG.md#rust_analyzer
-    server = {
-        -- on_attach is a callback called when the language server attachs to the buffer
-        -- on_attach = on_attach,
-        cmd = { 'rust-analyzer' },
-        cmd_env = {
-            RA_LOG = 'rust_analyzer=0'
-        },
-        settings = function()
-            rust_analyzer_settings["rust-analyzer"].cargo = { features = cargo_features }
-            return rust_analyzer_settings
-        end,
-    },
     -- debugging stuff
     dap = {
         adapter = {
             type = "executable",
             command = "lldb-vscode",
             name = "rt_lldb",
-        },
-    },
-    -- settings for showing the crate graph based on graphviz and the dot
-    -- command
-    crate_graph = {
-        -- Backend used for displaying the graph
-        -- see: https://graphviz.org/docs/outputs/
-        -- default: x11
-        backend = "svg",
-        -- where to store the output, nil for no output stored (relative
-        -- path from pwd)
-        -- default: nil
-        output = nil,
-        -- true for all crates.io and external crates, false only the local
-        -- crates
-        -- default: true
-        full = true,
-
-        -- List of backends found on: https://graphviz.org/docs/outputs/
-        -- Is used for input validation and autocompletion
-        -- Last updated: 2021-08-26
-        enabled_graphviz_backends = {
-            "bmp",
-            "cgimage",
-            "canon",
-            "dot",
-            "gv",
-            "xdot",
-            "xdot1.2",
-            "xdot1.4",
-            "eps",
-            "exr",
-            "fig",
-            "gd",
-            "gd2",
-            "gif",
-            "gtk",
-            "ico",
-            "cmap",
-            "ismap",
-            "imap",
-            "cmapx",
-            "imap_np",
-            "cmapx_np",
-            "jpg",
-            "jpeg",
-            "jpe",
-            "jp2",
-            "json",
-            "json0",
-            "dot_json",
-            "xdot_json",
-            "pdf",
-            "pic",
-            "pct",
-            "pict",
-            "plain",
-            "plain-ext",
-            "png",
-            "pov",
-            "ps",
-            "ps2",
-            "psd",
-            "sgi",
-            "svg",
-            "svgz",
-            "tga",
-            "tiff",
-            "tif",
-            "tk",
-            "vml",
-            "vmlz",
-            "wbmp",
-            "webp",
-            "xlib",
-            "x11",
         },
     },
 }
@@ -812,7 +801,7 @@ local border = {
 
 -- fun borders for documentation and signature help
 local handlers =  {
-  ["textDocument/hover"] =  vim.lsp.with(vim.lsp.handlers.hover, {border = border}),
+  ["textDocument/hover"] =  vim.lsp.with(vim.lsp.handlers.hover, {border = "rounded"}),
   ["textDocument/signatureHelp"] =  vim.lsp.with(vim.lsp.handlers.signature_help, {border = border }),
 }
 
@@ -822,8 +811,7 @@ nvim_lsp.ccls.setup{
   },
   handlers = handlers
 }
--- nvim_lsp.gopls.setup{handlers = handlers}
--- nvim_lsp.solc.setup{handlers = handlers}
+nvim_lsp.gopls.setup{handlers = handlers}
 
 -- puts diagnostics in a hover window!!
 vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
@@ -836,49 +824,37 @@ vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
 vim.cmd [[autocmd CursorHold * lua vim.diagnostic.open_float()]]
 vim.cmd [[autocmd CursorHoldI * silent! lua vim.lsp.buf.signature_help()]]
 
-vim.g.rustaceanvim = opts
-
-local function enable_features(features)
-    local features = features.fargs
-
-    -- make sure the value is a string
-    if type(features) == "table" then
-        features = table.concat(features, ",")
-    end
-
-    if type(features) ~= "string" then
-        print("features must be a string or a table of strings")
-        return
-    else
-        -- make this a table with one element
-        features = { features }
-    end
-
-    -- set new features
-    cargo_features = features
-
-    -- restart rust-analyzer, do the equivalent of :RustAnalyzer restart
-    vim.api.nvim_command("RustAnalyzer restart")
-end
-
-local function clear_features()
-    cargo_features = nil
-end
-vim.api.nvim_create_user_command("RustClearFeatures", clear_features, {})
-vim.api.nvim_create_user_command("RustEnableFeatures", enable_features, { nargs = 1 })
-
 require('leap').add_default_mappings()
 require('perfanno').setup()
+
+-- vim.g.rustaceanvim = opts
+
+require'lspconfig'.rust_analyzer.setup{
+  settings = {
+    ['rust-analyzer'] = {
+        cmd = { "/home/dan/.rustup/toolchains/nightly-aarch64-apple-darwin/bin/rust-analyzer" },
+        extraEnv = {
+            ["RA_LOG"] = "debug",
+        },
+    }
+  }
+}
 
 -- Language snippet completion
 -- See https://github.com/molleweide/LuaSnip-snippets.nvim
 local luasnip = require("luasnip")
 
 -- be sure to load this first since it overwrites the snippets table.
-luasnip.snippets = require("luasnip_snippets").load_snippets()
+-- luasnip.snippets = require("luasnip_snippets").load_snippets()
 
 -- friendly-snippets
-require("luasnip.loaders.from_vscode").lazy_load()
+-- require("luasnip.loaders.from_vscode").lazy_load()
+require("no-neck-pain").setup({
+    width = 200,
+})
+
+-- completion type
+local lspkind = require('lspkind')
 
  -- Setup Completion
  -- See https://github.com/hrsh7th/nvim-cmp#basic-configuration
@@ -911,13 +887,23 @@ cmp.setup({
     })
   },
 
+  -- formatting to show supermaven suggestion
+  -- formatting = {
+  --   format = lspkind.cmp_format({
+  --     mode = "symbol",
+  --     max_width = 50,
+  --     symbol_map = { Supermaven = "" }
+  --   })
+  -- },
+
   -- Installed sources
   sources = {
     { name = 'nvim_lsp' },
     -- { name = 'vsnip' }, -- For vsnip users.
-    { name = 'luasnip' }, -- For luasnip users.
+    -- { name = 'luasnip' }, -- For luasnip users.
     -- { name = 'ultisnips' }, -- For ultisnips users.
     -- { name = 'snippy' }, -- For snippy users.
+    -- { name = 'supermaven' },
     { name = 'path' },
     { name = 'buffer' },
   },
@@ -934,6 +920,16 @@ require'nvim-treesitter.configs'.setup {
   auto_install = true,
 }
 
+-- for _, method in ipairs({ 'textDocument/diagnostic', 'workspace/diagnostic' }) do
+--     local default_diagnostic_handler = vim.lsp.handlers[method]
+--     vim.lsp.handlers[method] = function(err, result, context, config)
+--         if err ~= nil and err.code == -32802 then
+--             return
+--         end
+--         return default_diagnostic_handler(err, result, context, config)
+--     end
+-- end
+
 require("godbolt").setup({
     languages = {
         cpp = { compiler = "g122", options = {} },
@@ -947,6 +943,43 @@ require("godbolt").setup({
     },
     url = "https://godbolt.org" -- can be changed to a different godbolt instance
 })
+
+-- harpoon setup
+local harpoon = require("harpoon")
+
+-- REQUIRED
+harpoon:setup()
+-- REQUIRED
+
+vim.keymap.set("n", "<leader>a", function() harpoon:list():add() end)
+-- vim.keymap.set("n", "<C-e>", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end)
+
+-- Toggle previous & next buffers stored within Harpoon list
+vim.keymap.set("n", "<C-S-P>", function() harpoon:list():prev() end)
+vim.keymap.set("n", "<C-S-N>", function() harpoon:list():next() end)
+
+require("telescope").load_extension('bookmarks')
+
+-- basic telescope configuration
+local conf = require("telescope.config").values
+local function toggle_telescope(harpoon_files)
+    local file_paths = {}
+    for _, item in ipairs(harpoon_files.items) do
+        table.insert(file_paths, item.value)
+    end
+
+    require("telescope.pickers").new({}, {
+        prompt_title = "Harpoon",
+        finder = require("telescope.finders").new_table({
+            results = file_paths,
+        }),
+        previewer = conf.file_previewer({}),
+        sorter = conf.generic_sorter({}),
+    }):find()
+end
+
+vim.keymap.set("n", "<C-e>", function() toggle_telescope(harpoon:list()) end,
+    { desc = "Open harpoon window" })
 
 EOF
 
