@@ -378,6 +378,10 @@ augroup filetypedetect
   autocmd Filetype tex setlocal spell tw=80
   autocmd Filetype text setlocal spell tw=72
   autocmd Filetype markdown setlocal spell tw=0
+  
+  "" EVM Assembly
+  autocmd BufRead,BufNewFile *.eas,*.evm,*.evmasm setfiletype evmasm
+  autocmd FileType evmasm setlocal commentstring=;\ %s
 augroup end
 
 set autoread
@@ -840,6 +844,37 @@ require'lspconfig'.rust_analyzer.setup{
   }
 }
 
+-- EVM Assembly LSP Configuration
+-- Register the custom LSP server
+local configs = require('lspconfig.configs')
+if not configs.evm_asm_lsp then
+  configs.evm_asm_lsp = {
+    default_config = {
+      cmd = { 'evm-asm-lsp' },
+      filetypes = { 'evmasm', 'eas', 'evm' },
+      root_dir = nvim_lsp.util.root_pattern('.git', 'Makefile', 'package.json'),
+      settings = {},
+    },
+  }
+end
+
+-- Setup EVM Assembly LSP with handlers
+nvim_lsp.evm_asm_lsp.setup{
+  handlers = handlers,
+  on_attach = function(client, bufnr)
+    -- Enable completion triggered by <c-x><c-o>
+    vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+    
+    -- Use the same on_attach as other servers
+    require "lsp_signature".on_attach({
+      bind = true,
+      handler_opts = {
+        border = "rounded"
+      }
+    }, bufnr)
+  end,
+}
+
 -- Language snippet completion
 -- See https://github.com/molleweide/LuaSnip-snippets.nvim
 local luasnip = require("luasnip")
@@ -919,6 +954,39 @@ require'nvim-treesitter.configs'.setup {
   -- Automatically install missing parsers when entering buffer
   auto_install = true,
 }
+
+-- EVM Assembly Tree-sitter Configuration
+-- Register the parser
+local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
+parser_config.evm_asm = {
+  install_info = {
+    url = "~/projects/evm-asm-lsp/crates/tree-sitter-evm-asm",
+    files = {"src/parser.c"},
+    generate_requires_npm = false,
+    requires_generate_from_grammar = false,
+  },
+  filetype = "evmasm",
+}
+
+-- Add filetype detection for EVM Assembly in Lua too
+vim.filetype.add({
+  extension = {
+    eas = 'evmasm',
+    evm = 'evmasm',
+    evmasm = 'evmasm',
+  }
+})
+
+-- Auto-enable Tree-sitter highlighting for EVM Assembly
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'evmasm',
+  callback = function()
+    -- Enable Tree-sitter highlighting for this buffer
+    vim.defer_fn(function()
+      pcall(vim.cmd, 'TSBufEnable highlight')
+    end, 100)
+  end,
+})
 
 -- for _, method in ipairs({ 'textDocument/diagnostic', 'workspace/diagnostic' }) do
 --     local default_diagnostic_handler = vim.lsp.handlers[method]
