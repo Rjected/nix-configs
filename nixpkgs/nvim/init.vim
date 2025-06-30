@@ -547,7 +547,7 @@ require('avante').setup(avante_opts)
 
 -- colorscheme setup
 -- require("noirbuddy").setup()
-vim.cmd('colorscheme kanagawa')
+vim.cmd('colorscheme kanagawa-lotus')
 
 -- Or with configuration
 -- require('github-theme').setup({
@@ -1066,7 +1066,7 @@ if !exists('g:airline_symbols')
 endif
 
 " set airline dark theme
-let g:airline_theme='google_dark'
+let g:airline_theme='google_light'
 
 let g:airline#extensions#branch#enabled = 1
 let g:airline#extensions#tabline#enabled = 1
