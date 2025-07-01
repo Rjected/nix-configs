@@ -81,6 +81,46 @@ require("nvim-treesitter.configs").setup({
       node_decremental = "grm",
     },
   },
+  -- Treesitter textobjects
+  textobjects = {
+    select = {
+      enable = true,
+      lookahead = true, -- Automatically jump forward to textobj
+      keymaps = {
+        ["af"] = "@function.outer",
+        ["if"] = "@function.inner",
+        ["ac"] = "@class.outer",
+        ["ic"] = "@class.inner",
+        ["aa"] = "@parameter.outer",
+        ["ia"] = "@parameter.inner",
+        ["ab"] = "@block.outer",
+        ["ib"] = "@block.inner",
+      },
+    },
+    move = {
+      enable = true,
+      set_jumps = true, -- whether to set jumps in the jumplist
+      goto_next_start = {
+        ["]m"] = "@function.outer",
+        ["]]"] = "@class.outer",
+        ["]a"] = "@parameter.inner",
+      },
+      goto_previous_start = {
+        ["[m"] = "@function.outer",
+        ["[["] = "@class.outer",
+        ["[a"] = "@parameter.inner",
+      },
+    },
+    swap = {
+      enable = true,
+      swap_next = {
+        ["<leader>sn"] = "@parameter.inner",
+      },
+      swap_previous = {
+        ["<leader>sp"] = "@parameter.inner",
+      },
+    },
+  },
 })
 
 -- EVM Assembly Tree-sitter
@@ -133,3 +173,76 @@ _G.ViewerCallback = function(self)
   self:forward_search(self.out())
 end
 vim.g.vimtex_view_zathura_hook_callback = "ViewerCallback"
+
+-- Airline configuration
+-- Ensure airline loads with correct settings
+if vim.fn.exists('g:loaded_airline') == 0 then
+  -- Force airline to load if it hasn't
+  vim.cmd('runtime plugin/airline.vim')
+end
+
+-- Apply theme after airline is loaded
+vim.defer_fn(function()
+  if vim.g.colors_name == "kanagawa-lotus" then
+    vim.g.airline_theme = "kanagawa_lotus"
+  elseif vim.g.colors_name == "kanagawa-wave" then
+    vim.g.airline_theme = "kanagawa_wave"
+  elseif vim.g.colors_name == "kanagawa-dragon" then
+    vim.g.airline_theme = "kanagawa_dragon"
+  end
+  if vim.fn.exists(":AirlineRefresh") == 2 then
+    vim.cmd("AirlineRefresh")
+  end
+end, 100)
+
+-- Bufferline
+require("bufferline").setup({
+  options = {
+    mode = "buffers",
+    themable = true, -- Allow theme colors
+    numbers = "none",
+    close_command = "bdelete! %d",
+    right_mouse_command = "bdelete! %d",
+    left_mouse_command = "buffer %d",
+    middle_mouse_command = nil,
+    indicator = {
+      icon = '▎',
+      style = 'icon',
+    },
+    buffer_close_icon = '',
+    modified_icon = '●',
+    close_icon = '',
+    left_trunc_marker = '',
+    right_trunc_marker = '',
+    diagnostics = "nvim_lsp",
+    diagnostics_update_in_insert = false,
+    offsets = {
+      {
+        filetype = "NERDTree",
+        text = "File Explorer",
+        text_align = "left",
+        separator = true,
+      }
+    },
+    show_buffer_icons = true,
+    show_buffer_close_icons = true,
+    show_close_icon = true,
+    show_tab_indicators = true,
+    persist_buffer_sort = true,
+    separator_style = "thin",
+    enforce_regular_tabs = false,
+    always_show_bufferline = true,
+  },
+  highlights = {
+    fill = {
+      bg = { attribute = "bg", highlight = "Normal" },
+    },
+    background = {
+      bg = { attribute = "bg", highlight = "Normal" },
+    },
+    buffer_selected = {
+      bold = true,
+      italic = false,
+    },
+  },
+})

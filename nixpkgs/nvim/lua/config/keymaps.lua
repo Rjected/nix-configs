@@ -74,6 +74,16 @@ map("n", "<leader>x", ":bn<CR>", opts)
 map("n", "<leader>w", ":bn<CR>", opts)
 map("n", "<leader>c", ":b#<bar>bd#<CR>", opts)
 
+-- Bufferline specific navigation
+map("n", "<S-h>", ":BufferLineCyclePrev<CR>", opts)
+map("n", "<S-l>", ":BufferLineCycleNext<CR>", opts)
+map("n", "<leader>bp", ":BufferLinePick<CR>", opts)
+map("n", "<leader>bc", ":BufferLinePickClose<CR>", opts)
+-- Quick buffer switching
+for i = 1, 9 do
+  map("n", "<leader>" .. i, ":BufferLineGoToBuffer " .. i .. "<CR>", opts)
+end
+
 -- Clear search highlight
 map("n", "<leader><space>", ":noh<cr>", { silent = true })
 
@@ -125,8 +135,36 @@ map("n", "mp", bm.bookmark_prev, opts)
 map("n", "ml", bm.bookmark_list, opts)
 map("n", "mx", bm.bookmark_clear_all, opts)
 
--- Copilot
-map("i", "<C-j>", 'copilot#Accept("")', { silent = true, script = true, expr = true })
+-- Minuet AI virtual text acceptance
+vim.keymap.set('i', '<C-j>', function()
+  return vim.fn['minuet#complete_current_insertion']()
+end, { expr = true, desc = "Accept Minuet suggestion" })
+
+-- Kanagawa theme switcher
+local function switch_kanagawa_theme()
+  local themes = { "kanagawa-lotus", "kanagawa-wave", "kanagawa-dragon" }
+  local current = vim.g.colors_name
+  local current_idx = 1
+  
+  for i, theme in ipairs(themes) do
+    if theme == current then
+      current_idx = i
+      break
+    end
+  end
+  
+  local next_idx = current_idx % #themes + 1
+  vim.cmd("colorscheme " .. themes[next_idx])
+  vim.notify("Switched to " .. themes[next_idx], vim.log.levels.INFO)
+end
+
+-- Theme switching keymaps
+map("n", "<leader>kt", switch_kanagawa_theme, { desc = "Cycle Kanagawa themes" })
+map("n", "<leader>kl", ":colorscheme kanagawa-lotus<CR>", { desc = "Kanagawa Lotus (light)" })
+map("n", "<leader>kw", ":colorscheme kanagawa-wave<CR>", { desc = "Kanagawa Wave (dark)" })
+map("n", "<leader>kd", ":colorscheme kanagawa-dragon<CR>", { desc = "Kanagawa Dragon (darker)" })
+
+
 
 -- macOS specific
 if vim.fn.has("macunix") == 1 then

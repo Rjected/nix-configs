@@ -93,9 +93,6 @@ autocmd("GUIEnter", {
   command = "set visualbell t_vb=",
 })
 
--- Copilot settings
-vim.g.copilot_no_tab_map = true
-vim.g.copilot_assume_mapped = true
 
 -- Session settings
 vim.g.session_directory = "~/.vim/session"
@@ -133,7 +130,8 @@ vim.g.indentLine_char = "┆"
 vim.g.indentLine_faster = 1
 
 -- Airline settings
-vim.g.airline_theme = "google_light"
+-- Default to kanagawa-lotus theme (matches the colorscheme in init.lua)
+vim.g.airline_theme = "kanagawa_lotus"
 vim.g["airline#extensions#branch#enabled"] = 1
 vim.g["airline#extensions#tabline#enabled"] = 1
 vim.g.airline_skip_empty_sections = 1
@@ -177,6 +175,27 @@ vim.g.gh_trace = 1
 -- Markdown settings
 vim.g.vim_markdown_conceal = 0
 vim.g.vim_markdown_conceal_code_blocks = 0
+
+-- Auto-sync airline theme with colorscheme
+augroup("airline_theme_sync", { clear = true })
+autocmd("ColorScheme", {
+  group = "airline_theme_sync",
+  pattern = "kanagawa*",
+  callback = function()
+    local colorscheme = vim.g.colors_name
+    if colorscheme == "kanagawa-lotus" then
+      vim.g.airline_theme = "kanagawa_lotus"
+    elseif colorscheme == "kanagawa-wave" then
+      vim.g.airline_theme = "kanagawa_wave"
+    elseif colorscheme == "kanagawa-dragon" then
+      vim.g.airline_theme = "kanagawa_dragon"
+    end
+    -- Reload airline with new theme
+    if vim.fn.exists(":AirlineRefresh") == 2 then
+      vim.cmd("AirlineRefresh")
+    end
+  end,
+})
 
 
 

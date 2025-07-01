@@ -63,7 +63,7 @@ opt.titlestring = "%F"
 opt.statusline = "%F%m%r%h%w%=(%{&ff}/%Y) (line %l/%L, col %c)"
 opt.completeopt = { "menuone", "noinsert", "noselect" }
 opt.shortmess:append("c")
-opt.updatetime = 2000
+opt.updatetime = 300  -- Reduced from 2000ms for faster AI completions
 opt.wrap = true
 opt.textwidth = 80
 opt.colorcolumn = "0"
@@ -121,6 +121,10 @@ require("lazy").setup({
   "nvim-telescope/telescope.nvim",
   "nvim-telescope/telescope-file-browser.nvim",
   {
+    "nvim-telescope/telescope-fzf-native.nvim",
+    build = "make",
+  },
+  {
     "ThePrimeagen/harpoon",
     branch = "harpoon2",
   },
@@ -131,6 +135,22 @@ require("lazy").setup({
   "airblade/vim-gitgutter",
   "sindrets/diffview.nvim",
   "pwntester/octo.nvim",
+  
+  -- Local inline-reviews plugin for PR comments
+  {
+    dir = "~/projects/inline-reviews",
+    name = "inline-reviews",
+    config = function()
+      require("inline-reviews").setup({
+        auto_load = true,  -- Auto-detect PR on buffer enter
+        keymaps = {
+          view_comments = "<leader>rc",
+          next_comment = "]c",
+          prev_comment = "[c",
+        },
+      })
+    end,
+  },
 
   -- Editing
   "tpope/vim-commentary",
@@ -149,6 +169,9 @@ require("lazy").setup({
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter-textobjects",
+    },
   },
 
   -- UI enhancements
@@ -157,22 +180,37 @@ require("lazy").setup({
   "folke/trouble.nvim",
   "vim-airline/vim-airline",
   "vim-airline/vim-airline-themes",
+  {
+    'akinsho/bufferline.nvim',
+    version = "*",
+    dependencies = 'nvim-tree/nvim-web-devicons'
+  },
   "MunifTanjim/nui.nvim",
   "shortcuts/no-neck-pain.nvim",
   "tomasky/bookmarks.nvim",
 
   -- Session management
-  "xolox/vim-misc",
-  "xolox/vim-session",
+  {
+    "xolox/vim-misc",
+    lazy = false,
+    priority = 100,
+  },
+  {
+    "xolox/vim-session",
+    dependencies = { "xolox/vim-misc" },
+    lazy = false,
+  },
 
   -- AI
-  "github/copilot.vim",
+  {
+    "milanglacier/minuet-ai.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+  },
   {
     "yetone/avante.nvim",
     branch = "main",
     build = "make",
   },
-  "zbirenbaum/copilot.lua",
 
   -- Other tools
   "stevearc/dressing.nvim",
@@ -199,9 +237,20 @@ require("lazy").setup({
     lazy = false,  -- Don't lazy load by default
   },
   performance = {
+    cache = {
+      enabled = true,
+    },
     rtp = {
       reset = false,  -- Don't reset runtimepath
     },
+  },
+  checker = {
+    enabled = true,
+    notify = false,
+    frequency = 86400, -- Check once per day
+  },
+  ui = {
+    border = "rounded",
   },
 })
 
@@ -219,6 +268,7 @@ vim.api.nvim_create_autocmd("User", {
     require("config.completion")
     require("config.telescope")
     require("config.plugins")
+    require("config.minuet")
     
     -- Set colorscheme
     pcall(vim.cmd, "colorscheme kanagawa-lotus")

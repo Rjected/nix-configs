@@ -27,14 +27,31 @@ cmp.setup({
   },
   sources = {
     { name = "nvim_lsp" },
+    { name = "luasnip" },
+    { name = "minuet" },
     { name = "path" },
-    { name = "buffer" },
+    { name = "buffer", keyword_length = 3 },
   },
   formatting = {
     format = lspkind.cmp_format({
-      mode = "symbol",
+      mode = "symbol_text",
       max_width = 50,
+      ellipsis_char = "...",
+      menu = {
+        nvim_lsp = "[LSP]",
+        luasnip = "[Snip]",
+        minuet = "[AI]",
+        buffer = "[Buf]",
+        path = "[Path]",
+      },
     }),
+  },
+  experimental = {
+    ghost_text = true, -- Show preview of completion
+  },
+  performance = {
+    debounce = 60,
+    throttle = 30,
   },
 })
 
