@@ -1,0 +1,183 @@
+-- Autocommands configuration
+
+local augroup = vim.api.nvim_create_augroup
+local autocmd = vim.api.nvim_create_autocmd
+
+-- Sync syntax from start
+augroup("vimrc-sync-fromstart", { clear = true })
+autocmd("BufEnter", {
+  group = "vimrc-sync-fromstart",
+  command = "syntax sync maxlines=200",
+})
+
+-- Remember cursor position
+augroup("vimrc-remember-cursor-position", { clear = true })
+autocmd("BufReadPost", {
+  group = "vimrc-remember-cursor-position",
+  callback = function()
+    local mark = vim.api.nvim_buf_get_mark(0, '"')
+    local lcount = vim.api.nvim_buf_line_count(0)
+    if mark[1] > 0 and mark[1] <= lcount then
+      pcall(vim.api.nvim_win_set_cursor, 0, mark)
+    end
+  end,
+})
+
+-- Make/CMake settings
+augroup("vimrc-make-cmake", { clear = true })
+autocmd("FileType", {
+  group = "vimrc-make-cmake",
+  pattern = "make",
+  command = "setlocal noexpandtab",
+})
+autocmd({ "BufNewFile", "BufRead" }, {
+  group = "vimrc-make-cmake",
+  pattern = "CMakeLists.txt",
+  command = "setlocal filetype=cmake",
+})
+
+-- Filetype specific settings
+augroup("filetype_settings", { clear = true })
+
+-- Programming languages
+autocmd("FileType", {
+  group = "filetype_settings",
+  pattern = { "cpp", "c", "go" },
+  command = "setlocal tw=80",
+})
+
+-- Text files
+autocmd("FileType", {
+  group = "filetype_settings",
+  pattern = "tex",
+  command = "setlocal spell tw=80",
+})
+autocmd("FileType", {
+  group = "filetype_settings",
+  pattern = "text",
+  command = "setlocal spell tw=72",
+})
+autocmd("FileType", {
+  group = "filetype_settings",
+  pattern = "markdown",
+  command = "setlocal spell tw=0",
+})
+
+-- EVM Assembly
+autocmd({ "BufRead", "BufNewFile" }, {
+  group = "filetype_settings",
+  pattern = { "*.eas", "*.evm", "*.evmasm" },
+  command = "setfiletype evmasm",
+})
+autocmd("FileType", {
+  group = "filetype_settings",
+  pattern = "evmasm",
+  command = "setlocal commentstring=;\\ %s",
+})
+
+-- LSP diagnostics
+autocmd("CursorHold", {
+  callback = function()
+    vim.diagnostic.open_float(nil, { focus = false })
+  end,
+})
+
+autocmd("CursorHoldI", {
+  callback = function()
+    vim.lsp.buf.signature_help()
+  end,
+})
+
+-- Disable visual bell
+autocmd("GUIEnter", {
+  command = "set visualbell t_vb=",
+})
+
+-- Copilot settings
+vim.g.copilot_no_tab_map = true
+vim.g.copilot_assume_mapped = true
+
+-- Session settings
+vim.g.session_directory = "~/.vim/session"
+vim.g.session_autoload = "no"
+vim.g.session_autosave = "no"
+vim.g.session_command_aliases = 1
+
+-- Better whitespace settings
+vim.g.better_whitespace_enabled = 1
+vim.g.strip_whitespace_on_save = 1
+
+-- Vimtex settings
+vim.g.tex_flavor = "latex"
+vim.g.vimtex_view_method = "zathura"
+vim.g.vimtex_quickfix_mode = 0
+vim.g.vimtex_view_automatic = 1
+vim.g.tex_conceal = "abdmg"
+
+-- NERDTree settings
+vim.g.NERDTreeChDirMode = 2
+vim.g.NERDTreeIgnore = { "\\.rbc$", "\\~$", "\\.pyc$", "\\.db$", "\\.sqlite$", "__pycache__" }
+vim.g.NERDTreeSortOrder = { "^__\\.py$", "\\/$", "*", "\\.swp$", "\\.bak$", "\\~$" }
+vim.g.NERDTreeShowBookmarks = 1
+vim.g.nerdtree_tabs_focus_on_files = 1
+vim.g.NERDTreeMapOpenInTabSilent = "<RightMouse>"
+vim.g.NERDTreeWinSize = 35
+
+-- Vimshell settings
+vim.g.vimshell_user_prompt = 'fnamemodify(getcwd(), ":~")'
+vim.g.vimshell_prompt = "$ "
+
+-- IndentLine settings
+vim.g.indentLine_enabled = 1
+vim.g.indentLine_char = "┆"
+vim.g.indentLine_faster = 1
+
+-- Airline settings
+vim.g.airline_theme = "google_light"
+vim.g["airline#extensions#branch#enabled"] = 1
+vim.g["airline#extensions#tabline#enabled"] = 1
+vim.g.airline_skip_empty_sections = 1
+
+-- Airline symbols
+if not vim.g.airline_symbols then
+  vim.g.airline_symbols = {}
+end
+
+if not vim.g.airline_powerline_fonts then
+  vim.g["airline#extensions#tabline#left_sep"] = " "
+  vim.g["airline#extensions#tabline#left_alt_sep"] = "|"
+  vim.g.airline_left_sep = ""
+  vim.g.airline_left_alt_sep = "»"
+  vim.g.airline_right_sep = ""
+  vim.g.airline_right_alt_sep = "«"
+  vim.g["airline#extensions#branch#prefix"] = "⎇"
+  vim.g["airline#extensions#readonly#symbol"] = ""
+  vim.g["airline#extensions#linecolumn#prefix"] = "¶"
+  vim.g["airline#extensions#paste#symbol"] = "ρ"
+  vim.g.airline_symbols.linenr = "␤"
+  vim.g.airline_symbols.maxlinenr = ""
+  vim.g.airline_symbols.branch = "⎇"
+  vim.g.airline_symbols.paste = "∥"
+  vim.g.airline_symbols.whitespace = "Ξ"
+else
+  vim.g["airline#extensions#tabline#left_sep"] = ""
+  vim.g["airline#extensions#tabline#left_alt_sep"] = ""
+  vim.g.airline_left_sep = ""
+  vim.g.airline_left_alt_sep = ""
+  vim.g.airline_right_sep = ""
+  vim.g.airline_right_alt_sep = ""
+  vim.g.airline_symbols.branch = ""
+  vim.g.airline_symbols.readonly = ""
+  vim.g.airline_symbols.linenr = ""
+end
+
+-- GitHub line trace
+vim.g.gh_trace = 1
+
+-- Markdown settings
+vim.g.vim_markdown_conceal = 0
+vim.g.vim_markdown_conceal_code_blocks = 0
+
+
+
+
