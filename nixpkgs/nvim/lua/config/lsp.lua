@@ -1,140 +1,105 @@
--- LSP configuration
-
-local lspconfig = require("lspconfig")
+-- LSP configuration using vim.lsp.config (Neovim 0.11+)
 local lsp_signature = require("lsp_signature")
-
--- LSP handlers with borders
-local handlers = {
-  ["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = "rounded" }),
-  ["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {
-    border = {
-      { "╭", "FloatBorder" },
-      { "─", "FloatBorder" },
-      { "╮", "FloatBorder" },
-      { "│", "FloatBorder" },
-      { "╯", "FloatBorder" },
-      { "─", "FloatBorder" },
-      { "╰", "FloatBorder" },
-      { "│", "FloatBorder" },
-    },
-  }),
-}
-
--- Diagnostic configuration
-vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
-  vim.lsp.diagnostic.on_publish_diagnostics,
-  {
-    virtual_text = false,
-    underline = true,
-    signs = true,
-  }
-)
-
--- Suppress server cancelled request errors
-for _, method in ipairs({ "textDocument/diagnostic", "workspace/diagnostic" }) do
-  local default_diagnostic_handler = vim.lsp.handlers[method]
-  vim.lsp.handlers[method] = function(err, result, context, config)
-    if err ~= nil and err.code == -32802 then
-      return
-    end
-    return default_diagnostic_handler(err, result, context, config)
-  end
-end
 
 -- Common on_attach function
 local on_attach = function(client, bufnr)
+  -- LSP signature helper
   lsp_signature.on_attach({
     bind = true,
     handler_opts = {
-      border = "rounded",
+      border = "rounded"
     },
+    -- Suppress ContentModified errors
+    ignore_error = function(err, ctx, config)
+      -- Match on LSP error code -32801 (ContentModified)
+      if err.code == -32801 then
+        return true
+      end
+      return false
+    end
   }, bufnr)
+
+  -- Enable inlay hints if supported
+  if client.server_capabilities.inlayHintProvider then
+    vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
+  end
 end
 
--- Rust workspace root detection (copied from rust-tools)
-local function get_rust_root_dir(filename)
-  local lspconfig_utils = require("lspconfig.util")
-  local fname = filename or vim.api.nvim_buf_get_name(0)
-  local cargo_crate_dir = lspconfig_utils.root_pattern("Cargo.toml")(fname)
-  local cmd = { "cargo", "metadata", "--no-deps", "--format-version", "1" }
-  
-  if cargo_crate_dir ~= nil then
-    cmd[#cmd + 1] = "--manifest-path"
-    cmd[#cmd + 1] = lspconfig_utils.path.join(cargo_crate_dir, "Cargo.toml")
-  end
-  
-  local cargo_metadata = ""
-  local cm = vim.fn.jobstart(cmd, {
-    on_stdout = function(_, d, _)
-      cargo_metadata = table.concat(d, "\n")
-    end,
-    stdout_buffered = true,
-  })
-  
-  if cm > 0 then
-    cm = vim.fn.jobwait({ cm })[1]
-  else
-    cm = -1
-  end
-  
-  local cargo_workspace_dir = nil
-  if cm == 0 then
-    cargo_workspace_dir = vim.fn.json_decode(cargo_metadata)["workspace_root"]
-  end
-  
-  return cargo_workspace_dir
-    or cargo_crate_dir
-    or lspconfig_utils.root_pattern("rust-project.json")(fname)
-    or lspconfig_utils.find_git_ancestor(fname)
-end
-
--- Rust analyzer setup
-lspconfig.rust_analyzer.setup({
-  cmd = { "/Users/dan/.rustup/toolchains/nightly-aarch64-apple-darwin/bin/rust-analyzer" },
+-- Rust
+vim.lsp.config('rust_analyzer', {
+  on_attach = on_attach,
   settings = {
-    ["rust-analyzer"] = {
+    ['rust-analyzer'] = {
+      cargo = {
+        features = 'all',
+      },
       check = {
-        command = "clippy",
+        command = 'clippy',
       },
     },
   },
-  handlers = handlers,
-  on_attach = on_attach,
-  root_dir = get_rust_root_dir,
 })
+vim.lsp.enable('rust_analyzer')
 
--- C/C++ setup
-lspconfig.ccls.setup({
-  lsp = {
-    format_on_save = false,
-  },
-  handlers = handlers,
-  on_attach = on_attach,
-})
-
--- Go setup
-lspconfig.gopls.setup({
-  handlers = handlers,
-  on_attach = on_attach,
-})
-
--- EVM Assembly LSP setup
-local configs = require("lspconfig.configs")
-if not configs.evm_asm_lsp then
-  configs.evm_asm_lsp = {
-    default_config = {
-      cmd = { "evm-asm-lsp" },
-      filetypes = { "evmasm", "eas", "evm" },
-      root_dir = lspconfig.util.root_pattern(".git", "Makefile", "package.json"),
-      settings = {},
-    },
-  }
+-- Python
+if vim.fn.executable('pyright-langserver') == 1 then
+  vim.lsp.config('pyright', {
+    on_attach = on_attach,
+  })
+  vim.lsp.enable('pyright')
 end
 
-lspconfig.evm_asm_lsp.setup({
-  handlers = handlers,
-  on_attach = function(client, bufnr)
-    vim.api.nvim_buf_set_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
-    on_attach(client, bufnr)
-  end,
+-- TypeScript/JavaScript
+if vim.fn.executable('typescript-language-server') == 1 then
+  vim.lsp.config('ts_ls', {
+    on_attach = on_attach,
+  })
+  vim.lsp.enable('ts_ls')
+end
+
+-- Go
+if vim.fn.executable('gopls') == 1 then
+  vim.lsp.config('gopls', {
+    on_attach = on_attach,
+  })
+  vim.lsp.enable('gopls')
+end
+
+-- C/C++
+if vim.fn.executable('clangd') == 1 then
+  vim.lsp.config('clangd', {
+    on_attach = on_attach,
+  })
+  vim.lsp.enable('clangd')
+end
+
+-- Lua
+if vim.fn.executable('lua-language-server') == 1 then
+  vim.lsp.config('lua_ls', {
+    on_attach = on_attach,
+    settings = {
+      Lua = {
+        runtime = {
+          version = 'LuaJIT',
+        },
+        diagnostics = {
+          globals = { 'vim' },
+        },
+        workspace = {
+          library = vim.api.nvim_get_runtime_file("", true),
+          checkThirdParty = false,
+        },
+        telemetry = {
+          enable = false,
+        },
+      },
+    },
+  })
+  vim.lsp.enable('lua_ls')
+end
+
+-- Copilot
+vim.lsp.config('copilot', {
+  filetypes = { '*' },
 })
+vim.lsp.enable('copilot')

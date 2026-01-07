@@ -84,9 +84,26 @@ autocmd("CursorHold", {
 
 autocmd("CursorHoldI", {
   callback = function()
-    vim.lsp.buf.signature_help()
+    -- Only call signature_help if a server supports it
+    local clients = vim.lsp.get_clients({ bufnr = 0 })
+    for _, client in ipairs(clients) do
+      if client.server_capabilities.signatureHelpProvider then
+        vim.lsp.buf.signature_help()
+        return
+      end
+    end
   end,
 })
+
+-- Inlay hints highlighting
+autocmd("ColorScheme", {
+  callback = function()
+    -- Set up highlight groups for inlay hints - subtle gray, no background
+    vim.api.nvim_set_hl(0, "LspInlayHint", { fg = "#8a8a8a", italic = true })
+  end,
+})
+-- Apply immediately for current colorscheme
+vim.api.nvim_set_hl(0, "LspInlayHint", { fg = "#8a8a8a", italic = true })
 
 -- Disable visual bell
 autocmd("GUIEnter", {
@@ -111,14 +128,17 @@ vim.g.vimtex_quickfix_mode = 0
 vim.g.vimtex_view_automatic = 1
 vim.g.tex_conceal = "abdmg"
 
--- NERDTree settings
-vim.g.NERDTreeChDirMode = 2
-vim.g.NERDTreeIgnore = { "\\.rbc$", "\\~$", "\\.pyc$", "\\.db$", "\\.sqlite$", "__pycache__" }
-vim.g.NERDTreeSortOrder = { "^__\\.py$", "\\/$", "*", "\\.swp$", "\\.bak$", "\\~$" }
-vim.g.NERDTreeShowBookmarks = 1
-vim.g.nerdtree_tabs_focus_on_files = 1
-vim.g.NERDTreeMapOpenInTabSilent = "<RightMouse>"
-vim.g.NERDTreeWinSize = 35
+-- Neo-tree auto-open on startup
+augroup("neo-tree-autoopen", { clear = true })
+autocmd("VimEnter", {
+  group = "neo-tree-autoopen",
+  callback = function()
+    -- Only open if no file arguments were passed
+    if vim.fn.argc() == 0 then
+      vim.cmd("Neotree filesystem reveal left")
+    end
+  end,
+})
 
 -- Vimshell settings
 vim.g.vimshell_user_prompt = 'fnamemodify(getcwd(), ":~")'
@@ -135,6 +155,9 @@ vim.g.airline_theme = "kanagawa_lotus"
 vim.g["airline#extensions#branch#enabled"] = 1
 vim.g["airline#extensions#tabline#enabled"] = 1
 vim.g.airline_skip_empty_sections = 1
+
+-- Add Copilot status to airline
+vim.g.airline_section_x = "%{get(b:, 'copilot_status', '')}"
 
 -- Airline symbols
 if not vim.g.airline_symbols then
@@ -196,6 +219,29 @@ autocmd("ColorScheme", {
     end
   end,
 })
+
+-- Update Copilot status in statusline (disabled - for sidekick)
+-- augroup("copilot_status_update", { clear = true })
+-- autocmd({ "BufEnter", "CursorHold", "CursorHoldI" }, {
+--   group = "copilot_status_update",
+--   callback = function()
+--     local ok, sidekick_status = pcall(require, "sidekick.status")
+--     if ok then
+--       local status = sidekick_status.get()
+--       if status then
+--         if status.busy then
+--           vim.b.copilot_status = "🔄 Copilot"  -- Thinking
+--         elseif status.kind == "Error" then
+--           vim.b.copilot_status = "❌ Copilot"  -- Error
+--         else
+--           vim.b.copilot_status = "✅ Copilot"  -- Ready
+--         end
+--       else
+--         vim.b.copilot_status = ""  -- Not active
+--       end
+--     end
+--   end,
+-- })
 
 
 

@@ -1,22 +1,163 @@
 -- Plugin configurations
 
+-- Neo-tree file explorer
+require("neo-tree").setup({
+  close_if_last_window = true,
+  popup_border_style = "rounded",
+  enable_git_status = true,
+  enable_diagnostics = true,
+  default_component_configs = {
+    indent = {
+      indent_size = 2,
+      padding = 1,
+      with_markers = true,
+      indent_marker = "│",
+      last_indent_marker = "└",
+      highlight = "NeoTreeIndentMarker",
+    },
+    icon = {
+      folder_closed = "",
+      folder_open = "",
+      folder_empty = "󰜌",
+      default = "*",
+    },
+    modified = {
+      symbol = "[+]",
+      highlight = "NeoTreeModified",
+    },
+    name = {
+      trailing_slash = false,
+      use_git_status_colors = true,
+      highlight = "NeoTreeFileName",
+    },
+    git_status = {
+      symbols = {
+        added     = "✚",
+        modified  = "",
+        deleted   = "✖",
+        renamed   = "󰁕",
+        untracked = "",
+        ignored   = "",
+        unstaged  = "󰄱",
+        staged    = "",
+        conflict  = "",
+      }
+    },
+  },
+  window = {
+    position = "left",
+    width = 30,
+    mapping_options = {
+      noremap = true,
+      nowait = true,
+    },
+    mappings = {
+      ["<space>"] = { 
+        "toggle_node", 
+        nowait = false,
+      },
+      ["<2-LeftMouse>"] = "open",
+      ["<cr>"] = "open",
+      ["<esc>"] = "cancel",
+      ["P"] = { "toggle_preview", config = { use_float = true, use_image_nvim = true } },
+      ["l"] = "focus_preview",
+      ["S"] = "open_split",
+      ["s"] = "open_vsplit",
+      ["t"] = "open_tabnew",
+      ["w"] = "open_with_window_picker",
+      ["C"] = "close_node",
+      ["z"] = "close_all_nodes",
+      ["Z"] = "expand_all_nodes",
+      ["R"] = "refresh",
+      ["a"] = { "add", config = { show_path = "relative" } },
+      ["A"] = "add_directory",
+      ["d"] = "delete",
+      ["r"] = "rename",
+      ["y"] = "copy_to_clipboard",
+      ["x"] = "cut_to_clipboard",
+      ["p"] = "paste_from_clipboard",
+      ["c"] = "copy",
+      ["m"] = "move",
+      ["e"] = "toggle_auto_expand_width",
+      ["q"] = "close_window",
+      ["?"] = "show_help",
+      ["<"] = "prev_source",
+      [">"] = "next_source",
+      ["i"] = "show_file_details",
+    }
+  },
+  filesystem = {
+    filtered_items = {
+      visible = false,
+      hide_dotfiles = false,
+      hide_gitignored = false,
+      hide_hidden = false,
+      hide_by_name = {
+        ".DS_Store",
+        "thumbs.db",
+        "node_modules",
+        "target"
+      },
+    },
+    follow_current_file = {
+      enabled = true,
+      leave_dirs_open = false,
+    },
+    group_empty_dirs = false,
+    hijack_netrw_behavior = "open_default",
+    use_libuv_file_watcher = true,
+  },
+  buffers = {
+    follow_current_file = {
+      enabled = true,
+      leave_dirs_open = false,
+    },
+    group_empty_dirs = true,
+    show_unloaded = true,
+  },
+  git_status = {
+    window = {
+      position = "float",
+      mappings = {
+        ["A"]  = "git_add_all",
+        ["gu"] = "git_unstage_file",
+        ["ga"] = "git_add_file",
+        ["gr"] = "git_revert_file",
+        ["gc"] = "git_commit",
+        ["gp"] = "git_push",
+        ["gg"] = "git_commit_and_push",
+      }
+    }
+  },
+})
+
 -- Trouble
 require("trouble").setup({})
 
--- Avante AI assistant
-require("avante_lib").load()
-require("avante").setup({
-  provider = "gemini",
-  providers = {
-    gemini = {
-      endpoint = "https://generativelanguage.googleapis.com/v1beta/models",
-      model = "gemini-2.5-pro-preview-03-25",
-      timeout = 30000,
-      temperature = 0,
-      max_tokens = 1048576,
-    },
-  },
-})
+-- Avante AI assistant (optional - uncomment to use)
+-- require("avante_lib").load()
+-- require("avante").setup({
+--   provider = "gemini",
+--   providers = {
+--     gemini = {
+--       endpoint = "https://generativelanguage.googleapis.com/v1beta/models",
+--       model = "gemini-2.5-pro-preview-03-25",
+--       timeout = 30000,
+--       temperature = 0,
+--       max_tokens = 1048576,
+--     },
+--   },
+-- })
+
+-- Sidekick AI assistant (disabled - see lua/config/sidekick_backup.lua)
+-- To enable sidekick:
+-- 1. Comment out minuet in init.lua
+-- 2. Uncomment sidekick in init.lua
+-- 3. Uncomment the Copilot LSP setup in lsp.lua
+-- 4. Uncomment the configuration below
+-- require("sidekick").setup({
+--   -- Configuration moved to sidekick_backup.lua
+-- })
 
 -- Octo (GitHub integration)
 require("octo").setup()
@@ -33,7 +174,7 @@ require("bookmarks").setup({
 })
 
 -- Leap motion
-require("leap").add_default_mappings()
+-- Keymaps are now defined in keymaps.lua instead of using deprecated add_default_mappings()
 
 -- Performance annotations
 require("perfanno").setup()
@@ -154,6 +295,41 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+-- Diffview
+require("diffview").setup({
+  enhanced_diff_hl = true,
+  view = {
+    default = {
+      layout = "diff2_horizontal",
+    },
+    merge_tool = {
+      layout = "diff3_horizontal",
+      disable_diagnostics = true,
+    },
+    file_history = {
+      layout = "diff2_horizontal",
+    },
+  },
+  file_panel = {
+    listing_style = "tree",
+    tree_options = {
+      flatten_dirs = true,
+      folder_statuses = "only_folded",
+    },
+  },
+  keymaps = {
+    view = {
+      ["<tab>"] = require("diffview.actions").select_next_entry,
+      ["<s-tab>"] = require("diffview.actions").select_prev_entry,
+      ["gf"] = require("diffview.actions").goto_file_tab,
+      ["<C-w><C-f>"] = require("diffview.actions").goto_file_split,
+      ["<C-w>gf"] = require("diffview.actions").goto_file,
+      ["<leader>e"] = require("diffview.actions").focus_files,
+      ["<leader>b"] = require("diffview.actions").toggle_files,
+    },
+  },
+})
+
 -- Godbolt
 require("godbolt").setup({
   languages = {
@@ -195,54 +371,3 @@ vim.defer_fn(function()
   end
 end, 100)
 
--- Bufferline
-require("bufferline").setup({
-  options = {
-    mode = "buffers",
-    themable = true, -- Allow theme colors
-    numbers = "none",
-    close_command = "bdelete! %d",
-    right_mouse_command = "bdelete! %d",
-    left_mouse_command = "buffer %d",
-    middle_mouse_command = nil,
-    indicator = {
-      icon = '▎',
-      style = 'icon',
-    },
-    buffer_close_icon = '',
-    modified_icon = '●',
-    close_icon = '',
-    left_trunc_marker = '',
-    right_trunc_marker = '',
-    diagnostics = "nvim_lsp",
-    diagnostics_update_in_insert = false,
-    offsets = {
-      {
-        filetype = "NERDTree",
-        text = "File Explorer",
-        text_align = "left",
-        separator = true,
-      }
-    },
-    show_buffer_icons = true,
-    show_buffer_close_icons = true,
-    show_close_icon = true,
-    show_tab_indicators = true,
-    persist_buffer_sort = true,
-    separator_style = "thin",
-    enforce_regular_tabs = false,
-    always_show_bufferline = true,
-  },
-  highlights = {
-    fill = {
-      bg = { attribute = "bg", highlight = "Normal" },
-    },
-    background = {
-      bg = { attribute = "bg", highlight = "Normal" },
-    },
-    buffer_selected = {
-      bold = true,
-      italic = false,
-    },
-  },
-})

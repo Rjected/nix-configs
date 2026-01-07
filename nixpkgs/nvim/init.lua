@@ -23,6 +23,10 @@ vim.opt.rtp:prepend(lazypath)
 vim.g.mapleader = ","
 vim.g.maplocalleader = ","
 
+-- Disable session auto-save/load prompts
+vim.g.session_autoload = 'no'
+vim.g.session_autosave = 'no'
+
 -- Don't enable filetype here - let Neovim handle it naturally
 
 
@@ -55,6 +59,8 @@ opt.mousemodel = "popup"
 opt.termguicolors = true
 opt.scrolloff = 3
 opt.laststatus = 2
+opt.showmode = false  -- Disable mode display to avoid duplication
+opt.cmdheight = 1     -- Ensure command line height is consistent
 opt.modeline = true
 opt.modelines = 10
 opt.title = true
@@ -90,6 +96,43 @@ require("lazy").setup({
   "neovim/nvim-lspconfig",
   "nvim-lua/lsp-status.nvim",
   "ray-x/lsp_signature.nvim",
+  
+  -- Mason for managing LSP servers and DAP adapters
+  {
+    "williamboman/mason.nvim",
+    lazy = false,
+    priority = 100,  -- Load early
+    config = function()
+      require("mason").setup()
+    end,
+  },
+  {
+    "williamboman/mason-lspconfig.nvim",
+    dependencies = { 
+      "williamboman/mason.nvim",
+      "neovim/nvim-lspconfig",
+    },
+    lazy = false,
+    config = function()
+      -- Copilot Language Server installation (disabled - for sidekick)
+      -- local mason_registry = require("mason-registry")
+      -- if not mason_registry.is_installed("copilot-language-server") then
+      --   vim.notify("Installing Copilot Language Server via Mason...", vim.log.levels.INFO)
+      --   vim.cmd("MasonInstall copilot-language-server")
+      -- end
+      
+      require("mason-lspconfig").setup({
+        ensure_installed = {
+          -- Add LSP servers you want here
+        },
+        automatic_installation = true,
+      })
+    end,
+  },
+  {
+    "jay-babu/mason-nvim-dap.nvim",
+    dependencies = { "williamboman/mason.nvim" },
+  },
 
   -- Completion
   "hrsh7th/nvim-cmp",
@@ -116,7 +159,16 @@ require("lazy").setup({
   "jesseleite/nvim-noirbuddy",
 
   -- Navigation and File Management
-  "scrooloose/nerdtree",
+  -- "scrooloose/nerdtree",  -- Replaced with neo-tree
+  {
+    "nvim-neo-tree/neo-tree.nvim",
+    branch = "v3.x",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-tree/nvim-web-devicons",
+      "MunifTanjim/nui.nvim",
+    }
+  },
   "nvim-lua/plenary.nvim",
   "nvim-telescope/telescope.nvim",
   "nvim-telescope/telescope-file-browser.nvim",
@@ -143,11 +195,36 @@ require("lazy").setup({
     config = function()
       require("inline-reviews").setup({
         auto_load = true,  -- Auto-detect PR on buffer enter
+        notifications = false,  -- Disable "Loaded X comments" messages
         keymaps = {
           view_comments = "<leader>rc",
           next_comment = "]c",
           prev_comment = "[c",
         },
+        -- Enable the statuscolumn integration
+        statuscolumn = {
+          enabled = true,  -- This is the key to enable it!
+          component_position = "left",  -- or "right"
+          show_count = true,
+          show_outdated = true,
+        },
+        -- Custom icons for comment states
+        icons = {
+          resolved = "✓",     -- Green check for resolved
+          unresolved = "●",   -- Filled circle for unresolved
+          outdated = "○",     -- Empty circle for outdated
+          pending = "◐",      -- Half circle for pending
+        },
+        -- Configure the picker to use split layout (optional)
+        picker = {
+          layout = "vsplit",  -- Try "vsplit" for sidebar, "split" for bottom, or "float" (default)
+          split_width = 40,
+          auto_close = false,  -- Keep picker open when navigating
+          filters = {
+            enabled = true,
+            default = "status:unresolved",  -- Show only unresolved by default
+          },
+        }
       })
     end,
   },
@@ -202,15 +279,68 @@ require("lazy").setup({
   },
 
   -- AI
+  -- Amp.nvim - IDE integration for Amp CLI
+  {
+    "sourcegraph/amp.nvim",
+    config = function()
+      require("amp").setup()
+    end,
+  },
+  
+  -- Minuet AI (currently active)
   {
     "milanglacier/minuet-ai.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
   },
-  {
-    "yetone/avante.nvim",
-    branch = "main",
-    build = "make",
-  },
+  
+  -- Avante (disabled)
+  -- {
+  --   "yetone/avante.nvim",
+  --   branch = "main",
+  --   build = "make",
+  -- },
+  
+  -- Sidekick (disabled - config saved in lua/config/sidekick_backup.lua)
+  -- {
+  --   "folke/sidekick.nvim",
+  --   dependencies = { 
+  --     "nvim-lua/plenary.nvim",
+  --   },
+  --   event = "VeryLazy",
+  --   opts = {},  -- Will be configured in plugins.lua
+  -- },
+
+  -- Snacks.nvim for experimental features
+  -- {
+  --   "folke/snacks.nvim",
+  --   priority = 1000,
+  --   lazy = false,
+  --   config = function()
+  --     require("snacks").setup({
+  --       -- Enable experimental features
+  --       bigfile = { enabled = true },
+  --       notifier = { enabled = true },
+  --       quickfile = { enabled = true },
+  --       statuscolumn = { enabled = true },
+  --       words = { enabled = true },
+  --       styles = {
+  --         notification = {
+  --           wo = { wrap = true }
+  --         }
+  --       }
+  --     })
+  --   end,
+  -- },
+
+  -- Debug Adapter Protocol (DAP)
+  "mfussenegger/nvim-dap",
+  "nvim-neotest/nvim-nio",  -- Required for nvim-dap-ui
+  "rcarriga/nvim-dap-ui",
+  "theHamsta/nvim-dap-virtual-text",
+  "nvim-telescope/telescope-dap.nvim",
+  "mfussenegger/nvim-dap-python",
+  "leoluz/nvim-dap-go",
+  "jbyuki/one-small-step-for-vimkind",  -- Lua debugging
 
   -- Other tools
   "stevearc/dressing.nvim",
@@ -268,9 +398,14 @@ vim.api.nvim_create_autocmd("User", {
     require("config.completion")
     require("config.telescope")
     require("config.plugins")
-    require("config.minuet")
+    require("config.minuet")  -- Minuet AI configuration
+    -- require("config.sidekick")  -- Sidekick (disabled - see sidekick_backup.lua)
+    require("config.dap")
     
     -- Set colorscheme
     pcall(vim.cmd, "colorscheme kanagawa-lotus")
+    
+    -- Setup bufferline after colorscheme is loaded
+    require("bufferline").setup({})
   end,
 })

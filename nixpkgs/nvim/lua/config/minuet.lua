@@ -4,7 +4,7 @@ require('minuet').setup({
   provider = 'gemini',
   providers = {
     gemini = {
-      model = 'gemini-2.5-flash-lite-preview-06-17',
+      model = 'gemini-3-flash-preview',
     },
   },
   -- Enable both virtual text and completion menu
@@ -35,7 +35,20 @@ require('minuet').setup({
 
   -- Virtual text settings
   virtual_text = {
+    --a
     enabled = true,
     hl_group = "Comment",
+  },
+  virtualtext = {
+    auto_trigger_ft = {},
+    keymap = {
+      -- accept whole completion
+      accept = '<C-j>',
+      -- Cycle to prev completion item, or manually invoke completion
+      prev = '<C-h>',
+      -- Cycle to next completion item, or manually invoke completion
+      next = '<C-l>',
+      dismiss = '<A-e>',
+    },
   },
 })
