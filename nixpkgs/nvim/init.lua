@@ -245,6 +245,7 @@ require("lazy").setup({
   -- Treesitter
   {
     "nvim-treesitter/nvim-treesitter",
+    branch = "master",
     build = ":TSUpdate",
     dependencies = {
       "nvim-treesitter/nvim-treesitter-textobjects",
@@ -291,6 +292,16 @@ require("lazy").setup({
   {
     "milanglacier/minuet-ai.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
+  },
+
+  -- CodeCompanion - chat/inline AI (Claude Code via ACP)
+  {
+    "olimorris/codecompanion.nvim",
+    version = "^19.0.0",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+    },
   },
   
   -- Avante (disabled)
@@ -384,6 +395,42 @@ require("lazy").setup({
   },
 })
 
+-- nvim-treesitter's legacy branch expects query directive matches to contain a
+-- single TSNode per capture. Neovim 0.12 returns a list of nodes instead, which
+-- breaks markdown injections with `attempt to call method 'range' (a nil value)`.
+if vim.fn.has("nvim-0.12") == 1 then
+  local query = require("vim.treesitter.query")
+  local markdown_info_string_aliases = {
+    ex = "elixir",
+    pl = "perl",
+    sh = "bash",
+    ts = "typescript",
+    uxn = "uxntal",
+  }
+
+  local function capture_node(match, id)
+    local node = match[id]
+    if type(node) == "table" then
+      return node[1]
+    end
+    return node
+  end
+
+  local function parser_from_markdown_info_string(alias)
+    return vim.filetype.match({ filename = "a." .. alias }) or markdown_info_string_aliases[alias] or alias
+  end
+
+  query.add_directive("set-lang-from-info-string!", function(match, _, bufnr, pred, metadata)
+    local node = capture_node(match, pred[2])
+    if not node then
+      return
+    end
+
+    local injection_alias = vim.treesitter.get_node_text(node, bufnr):lower()
+    metadata["injection.language"] = parser_from_markdown_info_string(injection_alias)
+  end, { force = true, all = false })
+end
+
 -- Enable filetype detection after lazy setup
 vim.cmd("filetype plugin indent on")
 
@@ -399,6 +446,7 @@ vim.api.nvim_create_autocmd("User", {
     require("config.telescope")
     require("config.plugins")
     require("config.minuet")  -- Minuet AI configuration
+    require("config.codecompanion")  -- CodeCompanion (chat via Claude Code ACP)
     -- require("config.sidekick")  -- Sidekick (disabled - see sidekick_backup.lua)
     require("config.dap")
     
